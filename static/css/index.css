@@ -1,0 +1,51 @@
+
+.sta p,
+.stas p,
+.peopleList > p {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #fff;
+  height: 0;
+  width: 260px;
+  line-height: 30px;
+  padding-left: 10px;
+  border-width: 0px 30px 30px 0px;
+  border-style: none solid solid;
+  border-color: transparent transparent #166c7691;
+  border-radius: 5px 0 0 0;
+  font-size: 15px;
+  text-align: left;
+}
+.stas {
+  position: absolute;
+  /* z-index: 99999999; */
+  width: 420px;
+  height: 250px;
+  background: #132d377a;
+}
+.centerStas{
+  background:-webkit-linear-gradient(left,transparent,#cbb01480,#CBAF14,#cbb01480,transparent);
+  border:2px transparent solid;
+  border-image:linear-gradient(to right,transparent,#cbb01480,#fdf3f3,#cbb01480,transparent) 1 10;
+  border-left: 0px;
+  border-right: 0px;
+  position: absolute;
+}
+.centerStas >p{
+  font-size: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #fff;
+  height: 0;
+  line-height: 30px;
+  padding-left: 10px;
+  text-align: left;
+  font-weight: bold;
+  margin: auto;
+}
+.centerStas >p>label{
+  font-size: 32px;
+  color:#00FFFF;
+}

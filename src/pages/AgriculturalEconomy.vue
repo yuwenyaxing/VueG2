@@ -1,0 +1,572 @@
+<template>
+  <div>
+    <div class="centerStas centerIndex">
+      <p>{{MaxYear}}年临沂市农林牧渔及服务业完成产值<label>{{MaxYearValue}}</label>万元</p>
+    </div>
+    <div id='TotalValue' class="stas">
+       <p>临沂市历年农林牧渔服务业总产值</p>
+    </div>
+    <div id='SeedeArea' class="stas">
+       <p>临沂市历年农作物播种面积</p>
+    </div>
+    <div id='GrainYield' class="stas">
+       <p>临沂市历年粮食总产量</p>
+    </div>
+    <div id='FruitsYield' class="stas">
+       <p>2018年临沂市水果产量对比分析</p>
+    </div>
+    <div id='SeedeRegionArea' class="stas">
+       <p>各区县农作物播种面积情况</p>
+    </div>
+    <div id='GrainRegionYield' class="stas">
+       <p>各区县粮食总产量及亩产情况</p>
+    </div>
+    <div id='FruitIndex' class="stas">
+       <p>各区县粮食总产量及亩产情况</p>
+       <el-table :data="tableData" border  height="325px" highlight-current-row='true' @row-click='tableRowClick'>
+         <el-table-column prop="fruits" label="水果" width="40"></el-table-column>
+         <el-table-column prop="lanshan" label="兰山区" width="62"></el-table-column>
+         <el-table-column prop="luozhuang" label="罗庄区" width="63"></el-table-column>
+         <el-table-column prop="hedong" label="河东区" width="63"></el-table-column>
+         <el-table-column prop="yinan" label="沂南县" width="63"></el-table-column>
+         <el-table-column prop="tancheng" label="郯城县" width="60"></el-table-column>
+         <el-table-column prop="yishui" label="沂水县" width="60"></el-table-column>
+         <el-table-column prop="lanling" label="兰陵县" width="60"></el-table-column>
+         <el-table-column prop="feixian" label="费县" width="57"></el-table-column>
+         <el-table-column prop="pingyi" label="平邑县" width="60"></el-table-column>
+         <el-table-column prop="junan" label="莒南县" width="60"></el-table-column>
+         <el-table-column prop="mengyin" label="蒙阴县" width="60"></el-table-column>
+         <el-table-column prop="linshu" label="临沭县" width="60"></el-table-column>
+       </el-table>
+       <div class="tableRemarks">备注：规模优势指数如果大于1，说明该水果在当地具有规模优势。临沂市各区县苹果都具有规模优势；兰陵县的梨和桃等都占有规模优势；兰山区、罗庄区等区县的葡萄具有规模优势。</div>
+    </div>
+    <div  id='FruitMap'>
+      <p>各区县{{currentFruit}}“规模优势指数”</p>
+    </div>
+  </div>
+</template>
+<script>
+// import DataSet from '@antv/data-set'
+import { Chart } from '@antv/g2'
+import { Scene } from '@antv/l7'
+import { CityLayer } from '@antv/l7-district'
+import { Mapbox } from '@antv/l7-maps'
+export default {
+  data () {
+    return {
+      TotalValueData: [],
+      SeedeAreaData: [],
+      GrainYieldData: [],
+      FruitsYieldData: [],
+      SeedeRegionAreaData: [],
+      GrainRegionYieldData: [],
+      GrainRegionYieldMuData: [],
+      MaxYear: '',
+      MaxYearValue: '',
+      tableData: [],
+      mapData: [],
+      currentFruit: '苹果'
+    }
+  },
+  methods: {
+    setTotalValue () {
+      let chart = new Chart({
+        container: 'TotalValue',
+        forceFit: true,
+        height: document.getElementById('TotalValue').clientHeight,
+        width: document.getElementById('TotalValue').clientWidth, // 指定图表宽度
+        animate: true,
+        padding: [70, 20, 60, 70]
+      })
+      chart.tooltip({
+        showMarkers: false,
+        shared: true
+      })
+      chart.legend({
+        position: 'top-right',
+        offsetY: 35,
+        offsetX: -5,
+        valueStyle: {fill: 'red'}
+      })
+      chart.axis('value', {
+        label: {
+          formatter: (val) => {
+            return (+val / 10000).toFixed(1) + 'k万元'
+          }
+        }
+      })
+      this.changeChartAxisForeground(chart, 'value', 'year')
+      chart.source(this.TotalValueData)
+      chart.interval().position('year*value').color('type').adjust([
+        {
+          type: 'dodge',
+          marginRatio: 0
+        }
+      ])
+      chart.render()
+    },
+    setSeedeArea () {
+      const chart = new Chart({
+        container: 'SeedeArea',
+        autoFit: true,
+        height: document.getElementById('TotalValue').clientHeight,
+        width: document.getElementById('TotalValue').clientWidth, // 指定图表宽度
+        padding: [70, 20, 60, 70]
+      })
+      chart.data(this.SeedeAreaData)
+      chart.tooltip({
+        showCrosshairs: true,
+        shared: true
+      })
+      chart.scale('value', {
+        nice: false,
+        min: 950000,
+        max: 1100000,
+        formatter: val => {
+          return (+val / 10000).toFixed(1) + 'k公顷'
+        }
+      })
+      this.changeChartAxisForeground(chart, 'value', 'year')
+      chart.area().position('year*value')
+      chart.line().position('year*value')
+      chart.render()
+    },
+    setGrainYield () {
+      const chart = new Chart({
+        container: 'GrainYield',
+        autoFit: true,
+        height: document.getElementById('GrainYield').clientHeight,
+        width: document.getElementById('GrainYield').clientWidth, // 指定图表宽度
+        padding: [70, 20, 60, 70]
+      })
+      chart.data(this.GrainYieldData)
+      chart.tooltip({
+        showMarkers: false
+      })
+      chart.axis('value', {
+        label: {
+          nice: false,
+          min: 370,
+          max: 430,
+          formatter: (val) => {
+            return val + '万吨'
+          }
+        }
+      })
+      this.changeChartAxisForeground(chart, 'value', 'year')
+      chart.interaction('active-region')
+      chart.interval().position('year*value').color('#DAA520').label('value', {
+        // position: 'middle',
+        style: {
+          fill: '#bddfff'
+        },
+        offset: 10
+      })
+      chart.render()
+    },
+    setFruitsYield () {
+      const chart = new Chart({
+        container: 'FruitsYield',
+        height: document.getElementById('TotalValue').clientHeight,
+        width: document.getElementById('TotalValue').clientWidth, // 指定图表宽度
+        padding: [70, 20, 60, 70],
+        autoFit: true
+      })
+      chart.data(this.FruitsYieldData)
+      chart.scale('value', {
+        nice: true
+      })
+      chart.tooltip({
+        showMarkers: false
+      })
+      this.changeChartAxisForeground(chart, 'value', 'type')
+      chart.legend('type', false)
+      chart.interaction('active-region')
+      chart.interval().position('type*value').color('type')
+      chart.render()
+    },
+    setSeedeRegionArea () {
+      let chart = new Chart({
+        container: 'SeedeRegionArea',
+        forceFit: true,
+        height: document.getElementById('SeedeRegionArea').clientHeight,
+        width: document.getElementById('SeedeRegionArea').clientWidth, // 指定图表宽度
+        animate: true,
+        padding: [70, 20, 60, 70]
+      })
+      chart.tooltip({
+        showMarkers: false,
+        shared: true
+      })
+      chart.legend({
+        position: 'top-right',
+        offsetY: 35,
+        offsetX: -5,
+        attachLast: true,
+        // marker: 'square',
+        style: {
+          fill: '#fff'
+        }
+      })
+      this.changeChartAxisForeground(chart, 'value', 'region')
+      chart.source(this.SeedeRegionAreaData)
+      // chart.interval().position('region*value').color('type').adjust([
+      //   {
+      //     type: 'dodge',
+      //     marginRatio: 0
+      //   }
+      // ])
+      chart.area().position('region*value').color('type')
+      chart.line().position('region*value').color('type')
+      chart.render()
+    },
+    setGrainRegionYield () {
+      let chart = new Chart({
+        container: 'GrainRegionYield',
+        forceFit: false,
+        height: document.getElementById('GrainRegionYield').clientHeight,
+        width: document.getElementById('GrainRegionYield').clientWidth, // 指定图表宽度
+        animate: true,
+        padding: [70, 40, 60, 70]
+      })
+      chart.scale('ratevalue', { // 右侧坐标轴
+        min: 350,
+        max: 510,
+        tickCount: 4, // 左右坐标轴刻度数量保持一致 好看点
+        range: [0, 1 - 1 / 5 / 2]
+      })
+      chart.legend({
+        custom: true,
+        position: 'top-right',
+        offsetY: 35,
+        offsetX: -5,
+        flipPage: false,
+        items: [
+          {
+            name: '粮食产量',
+            marker: {
+              symbol: 'square',
+              style: {
+                fill: '#3182bd'
+              },
+              clickable: false
+            }
+          },
+          {
+            name: '粮食亩产',
+            marker: {
+              symbol: 'circle',
+              style: {
+                fill: '#fdae6b'
+              },
+              clickable: false
+            }
+          }
+        ]
+      })
+      chart.axis('ratevalue', {
+        grid: null,
+        label: {
+          textStyle: {
+            fill: '#fdae6b'
+          }
+        }
+      })
+      this.changeChartAxisForeground(chart, 'value', 'region')
+      this.changeChartAxisForeground(chart, 'ratevalue', '')
+      chart.source(this.GrainRegionYieldData)
+      chart.interval().position('region*value').color('#3182bd')
+      chart.line().position('region*ratevalue').color('#fdae6b').size(3).shape('smooth')
+      chart.point().position('region*ratevalue').color('#fdae6b').size(3).shape('circle')
+      chart.render()
+    },
+    setMapChartData () {
+      const scene = new Scene({
+        id: 'FruitMap',
+        map: new Mapbox({
+          // center: [ 118.35, 35.35 ],
+          style: 'blank',
+          zoom: 5,
+          minZoom: 7.3,
+          maxZoom: 7.3,
+          token: '6ad2670c38c89b49e3ec9811c4ea8c0e'
+        })
+      })
+      const data = this.mapData
+      console.log(data)
+      scene.on('loaded', () => {
+        /* eslint-disable no-new */
+        new CityLayer(scene, {
+          data,
+          joinBy: [ 'adcode', 'code' ],
+          adcode: [ '371300', '539' ],
+          depth: 3,
+          label: {
+            field: 'NAME_CHN',
+            textAllowOverlap: false
+          },
+          fill: {
+            color: { field: 'value',
+              values: [
+                '#b8ff21',
+                '#00d8ff'
+              ]
+            }
+          },
+          popup: {
+            enable: true,
+            Html: props => {
+              return `<span>${props.NAME_CHN}:</span><span>${props.value}</span>`
+            }
+          }
+        })
+      })
+    },
+    test () {
+      const scene = new Scene({
+        id: 'FruitMap',
+        map: new Mapbox({
+          // center: [ 118.35, 35.35 ],
+          style: 'blank',
+          zoom: 5,
+          minZoom: 7.3,
+          maxZoom: 7.3,
+          token: '6ad2670c38c89b49e3ec9811c4ea8c0e'
+        })
+      })
+      // scene.clear()
+      const data = this.mapData
+      scene.on('loaded', () => {
+        /* eslint-disable no-new */
+        new CityLayer(scene, {
+          data,
+          joinBy: [ 'adcode', 'code' ],
+          adcode: [ '371300', '539' ],
+          depth: 3,
+          label: {
+            field: 'NAME_CHN',
+            textAllowOverlap: false
+          },
+          fill: {
+            color: { field: 'value',
+              values: [
+                '#b8ff21',
+                '#00d8ff'
+              ]
+            }
+          },
+          popup: {
+            enable: true,
+            Html: props => {
+              return `<span>${props.NAME_CHN}:</span><span>${props.pop}</span>`
+            }
+          }
+        })
+      })
+    },
+    changeChartAxisForeground (chart, x, y) {
+      chart.axis(x, {
+        label: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
+      })
+      chart.axis(y, {
+        label: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
+      })
+    },
+    setMapData (data) {
+      this.currentFruit = data.fruits
+      this.mapData = []
+      this.mapData.push({code: '371302', name: '兰山区', value: data.lanshan})
+      this.mapData.push({code: '371311', name: '罗庄区', value: data.luozhuang})
+      this.mapData.push({code: '371312', name: '河东区', value: data.hedong})
+      this.mapData.push({code: '371321', name: '沂南县', value: data.yinan})
+      this.mapData.push({code: '371322', name: '郯城县', value: data.tancheng})
+      this.mapData.push({code: '371323', name: '沂水县', value: data.yishui})
+      this.mapData.push({code: '371324', name: '兰陵县', value: data.lanling})
+      this.mapData.push({code: '371325', name: '费县', value: data.feixian})
+      this.mapData.push({code: '371326', name: '平邑县', value: data.pingyi})
+      this.mapData.push({code: '371327', name: '莒南县', value: data.junan})
+      this.mapData.push({code: '371328', name: '蒙阴县', value: data.mengyin})
+      this.mapData.push({code: '371329', name: '临沭县', value: data.linshu})
+      this.setMapChartData()
+    },
+    tableRowClick (row, column, event) {
+      console.log(row, column, event)
+      this.setMapData(row)
+    }
+  },
+  mounted () {
+    this.axios.get('/agricultural/data').then(res => {
+      this.TotalValueData = res.data.yearAgricu.filter(x => x.part === '0')
+      this.MaxYear = Math.max.apply(Math, this.TotalValueData.map(item => { return item.year }))
+      this.MaxYearValue = this.TotalValueData.filter(x => x.type === '总产值' && x.year === 2018 + '')[0].value
+      this.SeedeAreaData = res.data.yearAgricu.filter(x => x.part === '1')
+      this.GrainYieldData = res.data.yearAgricu.filter(x => x.part === '2')
+      this.FruitsYieldData = res.data.yearAgricu.filter(x => x.part === '3')
+      this.SeedeRegionAreaData = res.data.regionAgricu.filter(x => x.part === '0')
+      let data = res.data.regionAgricu.filter(x => x.part === '1' && x.unit === '吨')
+      let ratedata = res.data.regionAgricu.filter(x => x.part === '1' && x.unit !== '吨')
+      for (var i = 0; i < data.length; i++) {
+        this.GrainRegionYieldData.push({
+          region: data[i].region,
+          value: data[i].value,
+          ratevalue: ratedata.filter(x => x.region === data[i].region)[0].value
+        })
+      }
+      this.tableData = res.data.regionFruits
+      // this.setMapData(this.tableData[0])
+      // console.log(this.tableData)
+      this.RegionPopDensityData = res.data.yearAgricu
+      this.setTotalValue()
+      this.setSeedeArea()
+      // this.setGrainYield()
+      // this.setSeedeRegionArea()
+      // this.setGrainRegionYield()
+      // this.setFruitsYield()
+      // this.test02()
+      // this.setDashData()
+      // var result = res.data.yearMacro.filter(x => x.part === '0' && x.unit === '%')
+      // this.electrics = result
+      // console.log(this.electrics)
+      // this.init()
+    })
+  }
+}
+</script>
+<style scoped>
+#TotalValue{
+  left: 20px;
+  top:100px;
+  width:500px;
+  height:315px
+}
+#SeedeArea{
+  left: 20px;
+  top:420px;
+  width:500px;
+  height:310px
+}
+#GrainYield{
+  left: 20px;
+  top:735px;
+  width:500px;
+  height:310px
+}
+#FruitsYield{
+  left: 530px;
+  top:155px;
+  width:600px;
+  height:275px
+}
+#SeedeRegionArea{
+  left: 530px;
+  top:437px;
+  width:600px;
+  height:280px
+}
+#GrainRegionYield{
+  left: 530px;
+  top:724px;
+  width:600px;
+  height:335px
+}
+#FruitIndex{
+  left:1140px;
+  top:114px;
+  width:770px;
+  height:950px
+}
+#FruitMap{
+ left:1140px;
+  top:494px;
+  width:770px;
+  height:550px;
+  position: absolute;
+  z-index: 99;
+ /* border: red solid 1px; */
+}
+#FruitMap > P{
+  color: white;
+  line-height: 30px;
+  font-size: 24px;
+}
+.tableRemarks{
+  color: #bddfff;
+  text-align: left;
+  padding:12px;
+}
+/* .map{
+ border: red solid 1px;
+   width: 100%;
+  height: 500px;
+    left:1140px;
+  top:514px;
+  width:770px;
+  height:550px
+} */
+.centerIndex{
+  width: 550px;
+  height: 45px;
+  top:100px;
+  left:550px;
+}
+</style>
+<style>
+.el-table{
+  background-color: transparent;
+  width: 100%;
+  top:50px;
+  color: #fff;
+  /* margin:5px; */
+  /* border:solid 1px red */
+}
+.el-table .cell{
+  line-height: 15px;
+  padding-right: 0px;
+}
+.el-table th, .el-table tr {
+  background-color: transparent;
+  /* border: 0px; */
+}
+.el-table__footer-wrapper, .el-table__header-wrapper {
+  background-color: #3cb37293;
+}
+.el-table thead {
+  color: #fff;
+}
+.el-table--border td, .el-table--border th, .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed {
+  border-right: 1px solid #48d1cd4b;
+}
+.el-table td, .el-table th.is-leaf {
+  border-bottom: 1px solid #48d1cd4b;
+}
+.el-table--border, .el-table--group {
+  border: 1px solid #48d1cd4b;
+}
+.el-table__body tr:hover,.el-table__body tr:active,.el-table__body tr:focus{
+  background-color: #ffa60041;
+}
+.el-table__body tr.current-row>td {
+  background-color: #ffa60041;
+}
+.el-table--enable-row-hover .el-table__body tr:hover>td {
+  background-color: #ffa60041;
+}
+.el-table .cell, .el-table--border td:first-child .cell, .el-table--border th:first-child .cell {
+  padding-left: 5px;
+}
+.el-table th>.cell {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.el-table--border::after, .el-table--group::after, .el-table::before {
+  background-color: transparent;
+}
+</style>
