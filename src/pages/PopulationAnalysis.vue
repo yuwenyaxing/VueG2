@@ -4,15 +4,19 @@
     <iframe src="http://60.217.33.59:4100/yanan/populationAndBearingCapacity" frameborder="0"  width='100%' height='100%'></iframe>
     <div id='YearPopulationLive' class="stas">
        <p>历年常驻人口与户籍人口对比</p>
+       <label>单位（万人）</label>
     </div>
     <div id='RegionPopSex' class="stas">
        <p>临沂市户籍人口性别比</p>
+       <label>单位（女性=100）</label>
     </div>
     <div id='YearPopulationTownRate' class="stas">
        <p>临沂市常住人口城镇化率</p>
+       <label>单位（%）</label>
     </div>
     <div id='RegionPopDensity' class="stas">
        <p>各区县常住人口密度</p>
+       <label>单位（人/平方公里）</label>
     </div>
     <div id='PopAnalysis' class="stas">
        <p>基于土地资源等人口承载力及预警分析</p>
@@ -32,6 +36,7 @@
 <script>
 import DataSet from '@antv/data-set'
 import { Chart } from '@antv/g2'
+import * as utils from '@/utils/commonUtils.js'
 export default {
   data () {
     return {
@@ -45,10 +50,9 @@ export default {
     setYearPopulationLive () {
       let chart = new Chart({
         container: 'YearPopulationLive',
-        forceFit: true,
-        height: document.getElementById('YearPopulationLive').clientHeight,
-        width: document.getElementById('YearPopulationLive').clientWidth, // 指定图表宽度
-        animate: true,
+        autoFit: true,
+        // height: document.getElementById('YearPopulationLive').clientHeight,
+        // width: document.getElementById('YearPopulationLive').clientWidth, // 指定图表宽度
         padding: [70, 20, 60, 60]
       })
       chart.tooltip({
@@ -56,8 +60,9 @@ export default {
         shared: true
       })
       chart.legend({
-        position: 'top-right'
-        // offsetY: -2,
+        position: 'top-right',
+        offsetY: 35,
+        offsetX: -5
         // autoWrap: true,
         // attachLast: true,
         // marker: 'square',
@@ -65,42 +70,8 @@ export default {
         //   fill: '#fff'
         // }
       })
-      chart.axis('year', {
-        line: {
-          lineWidth: 2,
-          stroke: 'red',
-          lineDash: [3, 3]
-        },
-        label: {
-          textStyle: {
-            fill: '#fff',
-            fontSize: 13
-          }
-        }
-      })
-      chart.axis('value', {
-        line: null,
-        label: {
-          textStyle: {
-            fill: '#fff'
-          }
-        }
-      })
       // chart.coordinate().transpose()
-      chart.scale('value', {
-        // type: 'pow',
-        label: {
-
-        },
-        alias: '万元',
-        nice: false,
-        min: 1000,
-        max: 1200,
-        formatter: val => {
-          return val + '/万人'
-        },
-        tickCount: 3
-      })
+      utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.source(this.YearPopulationLiveData)
       chart.interval().position('year*value').color('type').adjust([
         {
@@ -123,14 +94,8 @@ export default {
         showMarkers: true, // 展示 Tooltip 辅助线
         shared: true
       })
-      chart.axis('value', {
-        label: {
-          formatter: (val) => {
-            return val + '%'
-          }
-        }
-      })
       chart.source(this.RegionPopSexData)
+      utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.line().position('year*value').color('red')
       chart.point().position('year*value')
       chart.render()
@@ -142,28 +107,15 @@ export default {
         height: document.getElementById('YearPopulationTownRate').clientHeight,
         width: document.getElementById('YearPopulationTownRate').clientWidth, // 指定图表宽度
         animate: true,
-        padding: [110, 20, 60, 60]
+        padding: [110, 20, 60, 40]
       })
       chart.tooltip({
         showMarkers: false,
         shared: true
       })
-      chart.scale('value', {
-        // type: 'pow',
-        label: {
-
-        },
-        alias: '%',
-        nice: false,
-        // min: 0,
-        // max: 70,
-        formatter: val => {
-          return val + '/%'
-        }
-        // tickCount: 3
-      })
       chart.legend('value', false)
       chart.legend('year', false)
+      utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.source(this.YearPopulationTownRateData)
       chart.point().position('year*value').size('value', [4, 65]).color('year').shape('circle').style('year', (val) => {
         return {
@@ -224,6 +176,7 @@ export default {
           }
         }
       })
+      utils.changeChartAxisForeground(chart, 'region', '')
       chart.line().position('region*score').size(2)
       chart.point().position('region*score').shape('circle').size(4).style({
         stroke: '#fff',
@@ -306,12 +259,11 @@ export default {
       this.RegionPopSexData = res.data.yearPopulation.filter(x => x.part === '1')
       this.YearPopulationTownRateData = res.data.yearPopulation.filter(x => x.part === '2')
       this.RegionPopDensityData = res.data.regionPopulation
-      console.log(res.data, this.RegionPopDensityData)
-      // this.setYearPopulationLive()
+      this.setYearPopulationLive()
       this.setRegionPopSex()
       this.setYearPopulationTownRate()
       this.setRegionPopDensityData()
-      this.initStackBar()
+      // this.initStackBar()
       // this.setDashData()
       // var result = res.data.yearMacro.filter(x => x.part === '0' && x.unit === '%')
       // this.electrics = result

@@ -5,21 +5,28 @@
     </div>
     <div id='TotalValue' class="stas">
        <p>临沂市历年农林牧渔服务业总产值</p>
+       <label>单位（万元）</label>
     </div>
     <div id='SeedeArea' class="stas">
        <p>临沂市历年农作物播种面积</p>
+       <label>单位（公顷）</label>
     </div>
     <div id='GrainYield' class="stas">
        <p>临沂市历年粮食总产量</p>
+       <label>单位（万吨）</label>
     </div>
     <div id='FruitsYield' class="stas">
        <p>2018年临沂市水果产量对比分析</p>
+       <label>单位（万吨）</label>
     </div>
     <div id='SeedeRegionArea' class="stas">
        <p>各区县农作物播种面积情况</p>
+       <label>单位（千亩）</label>
     </div>
     <div id='GrainRegionYield' class="stas">
        <p>各区县粮食总产量及亩产情况</p>
+       <label style="margin-top:25px">单位（吨）</label>
+       <label style="margin-top:25px;left:500px">单位（公顷）</label>
     </div>
     <div id='FruitIndex' class="stas">
        <p>各区县粮食总产量及亩产情况</p>
@@ -51,6 +58,7 @@ import { Chart } from '@antv/g2'
 import { Scene } from '@antv/l7'
 import { CityLayer } from '@antv/l7-district'
 import { Mapbox } from '@antv/l7-maps'
+import * as utils from '@/utils/commonUtils.js'
 export default {
   data () {
     return {
@@ -95,7 +103,7 @@ export default {
           }
         }
       })
-      this.changeChartAxisForeground(chart, 'value', 'year')
+      utils.changeChartAxisForeground(chart, 'value', 'year')
       chart.source(this.TotalValueData)
       chart.interval().position('year*value').color('type').adjust([
         {
@@ -126,7 +134,7 @@ export default {
           return (+val / 10000).toFixed(1) + 'k公顷'
         }
       })
-      this.changeChartAxisForeground(chart, 'value', 'year')
+      utils.changeChartAxisForeground(chart, 'value', 'year')
       chart.area().position('year*value')
       chart.line().position('year*value')
       chart.render()
@@ -153,7 +161,7 @@ export default {
           }
         }
       })
-      this.changeChartAxisForeground(chart, 'value', 'year')
+      utils.changeChartAxisForeground(chart, 'value', 'year')
       chart.interaction('active-region')
       chart.interval().position('year*value').color('#DAA520').label('value', {
         // position: 'middle',
@@ -179,7 +187,7 @@ export default {
       chart.tooltip({
         showMarkers: false
       })
-      this.changeChartAxisForeground(chart, 'value', 'type')
+      utils.changeChartAxisForeground(chart, 'value', 'type')
       chart.legend('type', false)
       chart.interaction('active-region')
       chart.interval().position('type*value').color('type')
@@ -208,7 +216,7 @@ export default {
           fill: '#fff'
         }
       })
-      this.changeChartAxisForeground(chart, 'value', 'region')
+      utils.changeChartAxisForeground(chart, 'value', 'region')
       chart.source(this.SeedeRegionAreaData)
       // chart.interval().position('region*value').color('type').adjust([
       //   {
@@ -272,8 +280,8 @@ export default {
           }
         }
       })
-      this.changeChartAxisForeground(chart, 'value', 'region')
-      this.changeChartAxisForeground(chart, 'ratevalue', '')
+      utils.changeChartAxisForeground(chart, 'value', 'region')
+      utils.changeChartAxisForeground(chart, 'ratevalue', '')
       chart.source(this.GrainRegionYieldData)
       chart.interval().position('region*value').color('#3182bd')
       chart.line().position('region*ratevalue').color('#fdae6b').size(3).shape('smooth')
@@ -283,17 +291,16 @@ export default {
     setMapChartData () {
       const scene = new Scene({
         id: 'FruitMap',
+        logoVisible: false,
         map: new Mapbox({
           // center: [ 118.35, 35.35 ],
           style: 'blank',
           zoom: 5,
           minZoom: 7.3,
-          maxZoom: 7.3,
-          token: '6ad2670c38c89b49e3ec9811c4ea8c0e'
+          maxZoom: 7.3
         })
       })
       const data = this.mapData
-      console.log(data)
       scene.on('loaded', () => {
         /* eslint-disable no-new */
         new CityLayer(scene, {
@@ -364,22 +371,6 @@ export default {
         })
       })
     },
-    changeChartAxisForeground (chart, x, y) {
-      chart.axis(x, {
-        label: {
-          style: {
-            fill: '#bddfff'
-          }
-        }
-      })
-      chart.axis(y, {
-        label: {
-          style: {
-            fill: '#bddfff'
-          }
-        }
-      })
-    },
     setMapData (data) {
       this.currentFruit = data.fruits
       this.mapData = []
@@ -421,21 +412,17 @@ export default {
         })
       }
       this.tableData = res.data.regionFruits
-      // this.setMapData(this.tableData[0])
-      // console.log(this.tableData)
+      console.log(this.tableData[0])
+      this.setMapData(this.tableData[0])
       this.RegionPopDensityData = res.data.yearAgricu
       this.setTotalValue()
       this.setSeedeArea()
-      // this.setGrainYield()
-      // this.setSeedeRegionArea()
-      // this.setGrainRegionYield()
-      // this.setFruitsYield()
-      // this.test02()
-      // this.setDashData()
-      // var result = res.data.yearMacro.filter(x => x.part === '0' && x.unit === '%')
-      // this.electrics = result
-      // console.log(this.electrics)
-      // this.init()
+      this.setGrainYield()
+      this.setSeedeRegionArea()
+      this.setGrainRegionYield()
+      this.setFruitsYield()
+      this.test02()
+      this.setDashData()
     })
   }
 }
@@ -516,57 +503,5 @@ export default {
   height: 45px;
   top:100px;
   left:550px;
-}
-</style>
-<style>
-.el-table{
-  background-color: transparent;
-  width: 100%;
-  top:50px;
-  color: #fff;
-  /* margin:5px; */
-  /* border:solid 1px red */
-}
-.el-table .cell{
-  line-height: 15px;
-  padding-right: 0px;
-}
-.el-table th, .el-table tr {
-  background-color: transparent;
-  /* border: 0px; */
-}
-.el-table__footer-wrapper, .el-table__header-wrapper {
-  background-color: #3cb37293;
-}
-.el-table thead {
-  color: #fff;
-}
-.el-table--border td, .el-table--border th, .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed {
-  border-right: 1px solid #48d1cd4b;
-}
-.el-table td, .el-table th.is-leaf {
-  border-bottom: 1px solid #48d1cd4b;
-}
-.el-table--border, .el-table--group {
-  border: 1px solid #48d1cd4b;
-}
-.el-table__body tr:hover,.el-table__body tr:active,.el-table__body tr:focus{
-  background-color: #ffa60041;
-}
-.el-table__body tr.current-row>td {
-  background-color: #ffa60041;
-}
-.el-table--enable-row-hover .el-table__body tr:hover>td {
-  background-color: #ffa60041;
-}
-.el-table .cell, .el-table--border td:first-child .cell, .el-table--border th:first-child .cell {
-  padding-left: 5px;
-}
-.el-table th>.cell {
-  padding-left: 5px;
-  padding-right: 5px;
-}
-.el-table--border::after, .el-table--group::after, .el-table::before {
-  background-color: transparent;
 }
 </style>
