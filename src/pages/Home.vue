@@ -213,14 +213,3 @@ export default {
     text-align: center;
 }
 </style>
-<style >
-.el-radio__inner{
-  display: none;
-}
-.el-radio__label {
-  font-size: 20px;
-}
-.el-radio__input.is-checked+.el-radio__label {
-    color: yellow;
-}
-</style>

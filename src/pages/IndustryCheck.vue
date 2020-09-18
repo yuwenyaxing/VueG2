@@ -341,4 +341,7 @@ export default {
   font-size: 15px;
   text-align: left;
 }
+.el-table{
+  top:50px;
+}
 </style>

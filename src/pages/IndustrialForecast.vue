@@ -164,7 +164,6 @@ export default {
       chart.data(this.IndustryPropData)
       chart.legend('type', false)
       utils.changeChartAxisForeground(chart, 'type', 'value')
-      // this.changeChartAxisForeground(chart, 'year', 'value')
       chart.coordinate('theta', {radius: 0.75, innerRadius: 0.6})
       chart.interval().adjust('stack').position('value').color('type').label('value', (value) => {
         return {

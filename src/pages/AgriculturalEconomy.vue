@@ -68,7 +68,6 @@ export default {
       FruitsYieldData: [],
       SeedeRegionAreaData: [],
       GrainRegionYieldData: [],
-      GrainRegionYieldMuData: [],
       MaxYear: '',
       MaxYearValue: '',
       tableData: [],
@@ -95,13 +94,6 @@ export default {
         offsetY: 35,
         offsetX: -5,
         valueStyle: {fill: 'red'}
-      })
-      chart.axis('value', {
-        label: {
-          formatter: (val) => {
-            return (+val / 10000).toFixed(1) + 'k万元'
-          }
-        }
       })
       utils.changeChartAxisForeground(chart, 'value', 'year')
       chart.source(this.TotalValueData)
@@ -145,7 +137,7 @@ export default {
         autoFit: true,
         height: document.getElementById('GrainYield').clientHeight,
         width: document.getElementById('GrainYield').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 70]
+        padding: [70, 20, 60, 40]
       })
       chart.data(this.GrainYieldData)
       chart.tooltip({
@@ -177,7 +169,7 @@ export default {
         container: 'FruitsYield',
         height: document.getElementById('TotalValue').clientHeight,
         width: document.getElementById('TotalValue').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 70],
+        padding: [70, 20, 60, 40],
         autoFit: true
       })
       chart.data(this.FruitsYieldData)
@@ -200,7 +192,7 @@ export default {
         height: document.getElementById('SeedeRegionArea').clientHeight,
         width: document.getElementById('SeedeRegionArea').clientWidth, // 指定图表宽度
         animate: true,
-        padding: [70, 20, 60, 70]
+        padding: [70, 20, 60, 40]
       })
       chart.tooltip({
         showMarkers: false,
@@ -235,9 +227,9 @@ export default {
         height: document.getElementById('GrainRegionYield').clientHeight,
         width: document.getElementById('GrainRegionYield').clientWidth, // 指定图表宽度
         animate: true,
-        padding: [70, 40, 60, 70]
+        padding: [70, 40, 60, 50]
       })
-      chart.scale('ratevalue', { // 右侧坐标轴
+      chart.scale('粮食亩产', { // 右侧坐标轴
         min: 350,
         max: 510,
         tickCount: 4, // 左右坐标轴刻度数量保持一致 好看点
@@ -280,12 +272,13 @@ export default {
           }
         }
       })
-      utils.changeChartAxisForeground(chart, 'value', 'region')
-      utils.changeChartAxisForeground(chart, 'ratevalue', '')
+      chart.tooltip({shared: true})
+      utils.changeChartAxisForeground(chart, '粮食产量', 'region')
+      utils.changeChartAxisForeground(chart, '粮食亩产', '')
       chart.source(this.GrainRegionYieldData)
-      chart.interval().position('region*value').color('#3182bd')
-      chart.line().position('region*ratevalue').color('#fdae6b').size(3).shape('smooth')
-      chart.point().position('region*ratevalue').color('#fdae6b').size(3).shape('circle')
+      chart.interval().position('region*粮食产量').color('#3182bd')
+      chart.line().position('region*粮食亩产').color('#fdae6b').size(3).shape('smooth')
+      chart.point().position('region*粮食亩产').color('#fdae6b').size(3).shape('circle')
       chart.render()
     },
     setMapChartData () {
@@ -407,12 +400,11 @@ export default {
       for (var i = 0; i < data.length; i++) {
         this.GrainRegionYieldData.push({
           region: data[i].region,
-          value: data[i].value,
-          ratevalue: ratedata.filter(x => x.region === data[i].region)[0].value
+          粮食产量: data[i].value,
+          粮食亩产: ratedata.filter(x => x.region === data[i].region)[0].value
         })
       }
       this.tableData = res.data.regionFruits
-      console.log(this.tableData[0])
       this.setMapData(this.tableData[0])
       this.RegionPopDensityData = res.data.yearAgricu
       this.setTotalValue()
@@ -500,8 +492,11 @@ export default {
 } */
 .centerIndex{
   width: 550px;
-  height: 45px;
+  height: 40px;
   top:100px;
   left:550px;
+}
+.el-table{
+  top:50px;
 }
 </style>
