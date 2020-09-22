@@ -228,5 +228,4 @@ export default {
     background-color: #fff !important;
     border: 3px solid #67C23A;
 }
-
 </style>

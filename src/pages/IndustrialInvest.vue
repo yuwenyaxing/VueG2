@@ -15,8 +15,8 @@
       </div>
     </div>
     <div id='InvestRank' class="stas">
-       <p>{{MaxYear}}投资额排名</p>
-       <div id='InvestRegion'>
+      <p>{{MaxYear}}投资额排名</p>
+      <div id='InvestRegion'>
         <label>分市州排名</label>
         <label style="left:300px">单位（亿元）</label>
       </div>
@@ -295,7 +295,6 @@ export default {
     },
     getMapData () {
       this.axios.get('/industry/invest/data/' + this.currentYear).then(res => {
-        console.log(res)
         this.colorMapData = res.data.filter(x => x.type === '投资额').map(item => ({
           code: item.regioncode,
           name: item.region,
@@ -325,15 +324,6 @@ export default {
       this.Years = res.data.regionData.range
       this.currentYear = this.Years[0]
       this.getMapData()
-      // this.MaxYear = Math.max.apply(Math, this.TotalValueData.map(item => { return item.year }))
-      // this.MaxYearValue = this.TotalValueData.filter(x => x.type === '总产值' && x.year === 2018 + '')[0].value
-      // this.SeedeAreaData = res.data.yearAgricu.filter(x => x.part === '1')
-      // this.GrainYieldData = res.data.yearAgricu.filter(x => x.part === '2')
-      // this.FruitsYieldData = res.data.yearAgricu.filter(x => x.part === '3')
-      // this.SeedeRegionAreaData = res.data.regionAgricu.filter(x => x.part === '0')
-      // this.tableData = res.data.regionFruits
-      // this.setMapData(this.tableData[0])
-      // this.RegionPopDensityData = res.data.yearAgricu
       this.setIndustryInvest()
       this.setIndustryInvestProp()
       this.setInvestRegion()

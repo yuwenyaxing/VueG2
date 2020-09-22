@@ -47,7 +47,7 @@
        </el-table>
        <div class="tableRemarks">备注：规模优势指数如果大于1，说明该水果在当地具有规模优势。临沂市各区县苹果都具有规模优势；兰陵县的梨和桃等都占有规模优势；兰山区、罗庄区等区县的葡萄具有规模优势。</div>
     </div>
-    <div  id='FruitMap'>
+    <div id='FruitMap'>
       <p>各区县{{currentFruit}}“规模优势指数”</p>
     </div>
   </div>
@@ -322,48 +322,6 @@ export default {
         })
       })
     },
-    test () {
-      const scene = new Scene({
-        id: 'FruitMap',
-        map: new Mapbox({
-          // center: [ 118.35, 35.35 ],
-          style: 'blank',
-          zoom: 5,
-          minZoom: 7.3,
-          maxZoom: 7.3,
-          token: '6ad2670c38c89b49e3ec9811c4ea8c0e'
-        })
-      })
-      // scene.clear()
-      const data = this.mapData
-      scene.on('loaded', () => {
-        /* eslint-disable no-new */
-        new CityLayer(scene, {
-          data,
-          joinBy: [ 'adcode', 'code' ],
-          adcode: [ '371300', '539' ],
-          depth: 3,
-          label: {
-            field: 'NAME_CHN',
-            textAllowOverlap: false
-          },
-          fill: {
-            color: { field: 'value',
-              values: [
-                '#b8ff21',
-                '#00d8ff'
-              ]
-            }
-          },
-          popup: {
-            enable: true,
-            Html: props => {
-              return `<span>${props.NAME_CHN}:</span><span>${props.pop}</span>`
-            }
-          }
-        })
-      })
-    },
     setMapData (data) {
       this.currentFruit = data.fruits
       this.mapData = []
@@ -382,7 +340,6 @@ export default {
       this.setMapChartData()
     },
     tableRowClick (row, column, event) {
-      console.log(row, column, event)
       this.setMapData(row)
     }
   },
@@ -413,7 +370,6 @@ export default {
       this.setSeedeRegionArea()
       this.setGrainRegionYield()
       this.setFruitsYield()
-      this.test02()
       this.setDashData()
     })
   }
