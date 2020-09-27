@@ -128,7 +128,7 @@ export default {
         width: document.getElementById('EnterprisesLoss').clientWidth, // 指定图表宽度
         padding: [70, 20, 60, 40]
       })
-      chart.source(this.EnterprisesLossData)
+      chart.data(this.EnterprisesLossData)
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.area().position('year*value').color('l(96) 0:#24ff00 1:#000000').shape('smooth').tooltip(false)
       chart.line().position('year*value').size(2).color('#24ff00').shape('smooth').label('value', {
@@ -145,7 +145,7 @@ export default {
         width: document.getElementById('HiTech').clientWidth, // 指定图表宽度
         padding: [70, 20, 60, 40]
       })
-      chart.source(this.HiTechData)
+      chart.data(this.HiTechData)
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.line().position('year*value').size(2).color('#9370DB').shape('smooth').label('value', {
         style: {

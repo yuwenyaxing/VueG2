@@ -68,8 +68,6 @@ import { Chart, registerShape } from '@antv/g2'
 import { Scene, PointLayer } from '@antv/l7'
 import { ProvinceLayer } from '@antv/l7-district'
 import { Mapbox } from '@antv/l7-maps'
-// import { Scene, PointLayer } from '@antv/l7'
-// import { GaodeMap } from '@antv/l7-maps'
 import * as utils from '@/utils/commonUtils.js'
 export default {
   components: { timeLine },
@@ -127,7 +125,7 @@ export default {
         width: document.getElementById('FundsProp').clientWidth, // 指定图表宽度
         padding: [70, 20, 40, 40]
       })
-      chart.source(this.FundsPropData)
+      chart.data(this.FundsPropData)
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.area().position('year*value').color('l(96) 0:#24ff00 1:#000000').shape('smooth').tooltip(false)
       chart.line().position('year*value').size(2).color('#24ff00').shape('smooth').label('value', {
@@ -193,7 +191,7 @@ export default {
         valueStyle: {fill: 'red'}
       })
       utils.changeChartAxisForeground(chart, 'value', 'year')
-      chart.source(this.PatentsNumData)
+      chart.data(this.PatentsNumData)
       chart.interval().position('year*value').color('type').adjust([
         {
           type: 'dodge',

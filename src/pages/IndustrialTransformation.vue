@@ -131,7 +131,7 @@ export default {
           padding: [70, 40, 60, 50]
         })
       }
-      this.IndCreateValueChart.source(this.IndCreateValueData)
+      this.IndCreateValueChart.data(this.IndCreateValueData)
       utils.changeChartAxisForeground(this.IndCreateValueChart, 'year', 'value')
       this.IndCreateValueChart.area().position('year*value').color('l(96) 0:#cc00ff 1:#000000').shape('smooth').tooltip(false)
       this.IndCreateValueChart.line().position('year*value').size(2).color('#cc00ff').shape('smooth').label('value', {
@@ -239,7 +239,7 @@ export default {
         width: document.getElementById('HighTechCreateValueRatio').clientWidth, // 指定图表宽度
         padding: [70, 20, 40, 40]
       })
-      chart.source(this.HighTechCreateValueRatioData)
+      chart.data(this.HighTechCreateValueRatioData)
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.area().position('year*value').color('l(96) 0:#24ff00 1:#000000').shape('smooth').tooltip(false)
       chart.line().position('year*value').size(2).color('#24ff00').shape('smooth').label('value', {

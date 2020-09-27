@@ -30,7 +30,7 @@
     </div>
     <div id='FruitIndex' class="stas">
        <p>各区县粮食总产量及亩产情况</p>
-       <el-table :data="tableData" border  height="325px" highlight-current-row='true' @row-click='tableRowClick'>
+       <el-table :data="tableData" border  height="325px" @row-click='tableRowClick'>
          <el-table-column prop="fruits" label="水果" width="40"></el-table-column>
          <el-table-column prop="lanshan" label="兰山区" width="62"></el-table-column>
          <el-table-column prop="luozhuang" label="罗庄区" width="63"></el-table-column>
@@ -96,7 +96,7 @@ export default {
         valueStyle: {fill: 'red'}
       })
       utils.changeChartAxisForeground(chart, 'value', 'year')
-      chart.source(this.TotalValueData)
+      chart.data(this.TotalValueData)
       chart.interval().position('year*value').color('type').adjust([
         {
           type: 'dodge',
@@ -209,7 +209,7 @@ export default {
         }
       })
       utils.changeChartAxisForeground(chart, 'value', 'region')
-      chart.source(this.SeedeRegionAreaData)
+      chart.data(this.SeedeRegionAreaData)
       // chart.interval().position('region*value').color('type').adjust([
       //   {
       //     type: 'dodge',
@@ -275,7 +275,7 @@ export default {
       chart.tooltip({shared: true})
       utils.changeChartAxisForeground(chart, '粮食产量', 'region')
       utils.changeChartAxisForeground(chart, '粮食亩产', '')
-      chart.source(this.GrainRegionYieldData)
+      chart.data(this.GrainRegionYieldData)
       chart.interval().position('region*粮食产量').color('#3182bd')
       chart.line().position('region*粮食亩产').color('#fdae6b').size(3).shape('smooth')
       chart.point().position('region*粮食亩产').color('#fdae6b').size(3).shape('circle')
@@ -370,7 +370,6 @@ export default {
       this.setSeedeRegionArea()
       this.setGrainRegionYield()
       this.setFruitsYield()
-      this.setDashData()
     })
   }
 }

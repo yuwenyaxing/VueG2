@@ -119,7 +119,8 @@ export default {
       SecondIndustryChart: null,
       ThirdIndustryChart: null,
       color: ['#0086FA', '#FFBF00', '#F5222D'],
-      MaxYear: ''
+      MaxYear: '',
+      MapData: []
     }
   },
   methods: {
@@ -781,6 +782,8 @@ export default {
       this.FristIndustry.push({value: +res.data.threeIndustry.data.filter(x => x.year === this.ThreeIndustryTime && x.type === '第一产业')[0].value})
       this.SecondIndustry.push({value: +res.data.threeIndustry.data.filter(x => x.year === this.ThreeIndustryTime && x.type === '第二产业')[0].value})
       this.ThirdIndustry.push({value: +res.data.threeIndustry.data.filter(x => x.year === this.ThreeIndustryTime && x.type === '第三产业')[0].value})
+      this.MapData = res.data.regionLocationsMacro
+      console.log(this.MapData)
       this.setThreeNeed()
       this.setCityGDP()
       this.setIndexData('0')

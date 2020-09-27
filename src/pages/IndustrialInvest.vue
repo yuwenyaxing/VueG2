@@ -131,7 +131,7 @@ export default {
       chart.tooltip({shared: true})
       utils.changeChartAxisForeground(chart, '累计投资完成额', 'year')
       utils.changeChartAxisForeground(chart, '累计投资完成额同比增速', '')
-      chart.source(this.IndustryInvestData)
+      chart.data(this.IndustryInvestData)
       chart.interval().position('year*累计投资完成额').color('#3182bd')
       chart.line().position('year*累计投资完成额同比增速').color('#fdae6b').size(3).shape('smooth')
       chart.point().position('year*累计投资完成额同比增速').color('#fdae6b').size(3).shape('circle')

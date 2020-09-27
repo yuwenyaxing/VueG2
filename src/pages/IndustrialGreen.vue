@@ -175,7 +175,7 @@ export default {
         width: document.getElementById('WastewaterTreatmentRate').clientWidth, // 指定图表宽度
         padding: [80, 20, 20, 40]
       })
-      chart.source(this.WastewaterTreatmentRateData)
+      chart.data(this.WastewaterTreatmentRateData)
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.area().position('year*value').color('l(96) 0:#24ff00 1:#000000').shape('smooth').tooltip(false)
       chart.line().position('year*value').size(2).color('#24ff00').shape('smooth').label('value', {
@@ -240,7 +240,7 @@ export default {
       chart.tooltip({shared: true})
       utils.changeChartAxisForeground(chart, '空气质量优良天数', 'year')
       utils.changeChartAxisForeground(chart, '达标率', '')
-      chart.source(this.AirQualityData)
+      chart.data(this.AirQualityData)
       chart.interval().position('year*空气质量优良天数').color('#3182bd')
       chart.line().position('year*达标率').color('#fdae6b').size(3).shape('smooth')
       chart.point().position('year*达标率').color('#fdae6b').size(3).shape('circle')
@@ -378,7 +378,7 @@ export default {
         valueStyle: {fill: 'red'}
       })
       utils.changeChartAxisForeground(chart, 'value', 'year')
-      chart.source(this.SO2SootDustData)
+      chart.data(this.SO2SootDustData)
       chart.interval().position('year*value').color('type').adjust([
         {
           type: 'dodge',
