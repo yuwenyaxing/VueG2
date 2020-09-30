@@ -118,7 +118,12 @@ export default {
               clickable: false
             }
           }
-        ]
+        ],
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       chart.axis('累计投资完成额同比增速', {
         grid: null,

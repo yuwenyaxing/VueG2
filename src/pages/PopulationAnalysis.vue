@@ -84,13 +84,12 @@ export default {
       chart.legend({
         position: 'top-right',
         offsetY: 35,
-        offsetX: -5
-        // autoWrap: true,
-        // attachLast: true,
-        // marker: 'square',
-        // textStyle: {
-        //   fill: '#fff'
-        // }
+        offsetX: -5,
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       chart.scale('value', { // 右侧坐标轴
         min: 1000
@@ -308,7 +307,7 @@ export default {
           },
           content: '常住人口1062.4万人',
           offsetY: -5,
-          offsetX: -80
+          offsetX: -150
         }
       })
       chart.render()

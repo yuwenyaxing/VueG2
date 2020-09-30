@@ -60,7 +60,12 @@ export default {
       chart.legend({
         position: 'top-right',
         offsetY: 35,
-        offsetX: -5
+        offsetX: -5,
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.line().position('year*value').color('type').shape('smooth')

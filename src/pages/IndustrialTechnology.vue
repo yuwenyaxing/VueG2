@@ -188,7 +188,11 @@ export default {
         position: 'top-right',
         offsetY: 35,
         offsetX: -5,
-        valueStyle: {fill: 'red'}
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       utils.changeChartAxisForeground(chart, 'value', 'year')
       chart.data(this.PatentsNumData)

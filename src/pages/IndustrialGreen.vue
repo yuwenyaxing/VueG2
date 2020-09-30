@@ -227,7 +227,12 @@ export default {
               clickable: false
             }
           }
-        ]
+        ],
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       chart.axis('达标率', {
         grid: null,
@@ -375,7 +380,11 @@ export default {
         position: 'top-right',
         offsetY: 60,
         offsetX: -10,
-        valueStyle: {fill: 'red'}
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       utils.changeChartAxisForeground(chart, 'value', 'year')
       chart.data(this.SO2SootDustData)

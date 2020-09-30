@@ -73,30 +73,41 @@
          <el-col :span="8"><div id='SecondIndustry'></div></el-col>
          <el-col :span="8"><div id='ThirdIndustry'></div></el-col>
        </el-row>
-       <el-row>
+       <!-- <el-row>
          <el-radio-group style="margin-right:10px" v-model="ThreeIndustryTime" v-for="item in threeIndustryYears" :key="item" @change="ThreeIndustryTimeChange">
             <el-radio style="margin-top:0px" :label="item">{{item}}</el-radio>
           </el-radio-group>
-       </el-row>
+       </el-row> -->
+       <timeLine style="margin-top:10px" :pointend="pointend" width="850px" :timeLineList="threeIndustryYears" @clicktime='ThreeIndustryTimeChange'></timeLine>
     </div>
     <div id='RegionGDP' class="stas">
-       <p>各区县地区生产总值对比分析</p>
-       <label>单位（万人）</label>
+      <p>各区县地区生产总值对比分析</p>
+      <div id='map'></div>
+      <div class="mapdescribe">
+        <p style="color: #00FFF5;font-size: 26px;">{{FristRegion}}</p>
+        <p style="top:140px" >实现地区生产总值<lable style="color: #00FFF5;font-size: 24px;">{{FristRegionValue}}</lable>亿元</p>
+        <p style="top:170px">位居全市首位</p>
+        <p style="color: #00FFF5;font-size: 26px;top:320px">{{LastRegion}}</p>
+        <p style="top:350px" >实现地区生产总值<lable style="color: #00FFF5;font-size: 24px;">{{LastRegionValue}}</lable>亿元</p>
+        <p style="top:380px">位居全市末尾</p>
+      </div>
     </div>
   </div>
 </template>
 <script>
+import timeLine from '../components/TimeLine'
 import { Chart, registerShape } from '@antv/g2'
-import { Scene } from '@antv/l7'
-import { CityLayer } from '@antv/l7-district'
+import { Scene, Marker, MarkerLayer, PolygonLayer, LineLayer, PointLayer } from '@antv/l7'
 import { Mapbox } from '@antv/l7-maps'
 import * as utils from '@/utils/commonUtils.js'
 export default {
+  components: { timeLine },
   data () {
     return {
       NewYearGDP: '',
       NewYearGDPRate: '',
       PMI: '',
+      pointend: 0,
       GoodsAmount: '',
       PowerConsum: '',
       ThreeNeedData: [],
@@ -120,7 +131,11 @@ export default {
       ThirdIndustryChart: null,
       color: ['#0086FA', '#FFBF00', '#F5222D'],
       MaxYear: '',
-      MapData: []
+      MapData: [],
+      FristRegion: '',
+      FristRegionValue: '',
+      LastRegion: '',
+      LastRegionValue: ''
     }
   },
   methods: {
@@ -151,7 +166,7 @@ export default {
           padding: [70, 20, 60, 50]
         })
       }
-      this.GDPIndexChart.scale('value', {tickCount: 3})
+      this.GDPIndexChart.scale('value', {tickCount: 3, alias: '地区生产总值'})
       this.GDPIndexChart.data(this.CityGDPData)
       utils.changeChartAxisForeground(this.GDPIndexChart, 'region', 'value')
       this.GDPIndexChart.interaction('active-region')
@@ -163,18 +178,17 @@ export default {
       this.GDPIndexChart.legend(false)
       this.GDPIndexChart.interval().position('region*value').color('region', (val) => {
         if (val === '临沂市') { return '#ff5957' } return '#7FFFD4'
-      }).label('value', {
-        style: {
-          fill: '#bddfff'
-        }
       })
       this.GDPIndexChart.render()
     },
     setFixedInvestGrowth () {
       let chart = new Chart({
+        forceFit: true, // 默认为 false，设置为 true 时表示自动取 dom（实例容器）的宽度
+        autoFit: true,
         container: 'FixedInvestGrowth',
-        height: document.getElementById('FixedInvestGrowth').clientHeight,
-        width: document.getElementById('FixedInvestGrowth').clientWidth, // 指定图表宽度
+        render: 'svg',
+        // height: document.getElementById('FixedInvestGrowth').clientHeight,
+        // width: document.getElementById('FixedInvestGrowth').clientWidth, // 指定图表宽度
         padding: [70, 20, 60, 30]
       })
       chart.data(this.FixedInvestGrowthData)
@@ -185,7 +199,14 @@ export default {
       chart.legend({
         position: 'top-right',
         offsetY: 35,
-        offsetX: -5
+        offsetX: -5,
+        itemGap: 60,
+        // marker: 'square',
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       utils.changeChartAxisForeground(chart, 'year', 'value')
       chart.line().position('year*value').color('type').shape('smooth')
@@ -243,7 +264,12 @@ export default {
               clickable: false
             }
           }
-        ]
+        ],
+        itemName: {
+          style: {
+            fill: '#bddfff'
+          }
+        }
       })
       this.CityGDPChart.axis('ratevalue', {
         grid: null,
@@ -293,7 +319,6 @@ export default {
       this.SecondIndustry = []
       this.ThirdIndustry = []
       this.axios.get('/macro/data/getTheeIndustry/' + time).then(res => {
-        console.log(res.data.filter(x => x.type === '第二产业')[0].value, res.data.filter(x => x.type === '第三产业')[0].value)
         this.FristIndustry.push({value: +res.data.filter(x => x.type === '第一产业')[0].value})
         this.SecondIndustry.push({value: +res.data.filter(x => x.type === '第二产业')[0].value})
         this.ThirdIndustry.push({value: +res.data.filter(x => x.type === '第三产业')[0].value})
@@ -725,9 +750,9 @@ export default {
       })
       chart.changeData(data)
     },
-    setMapChartData () {
+    setMapChart (data) {
       const scene = new Scene({
-        id: 'RegionGDP',
+        id: 'map',
         logoVisible: false,
         map: new Mapbox({
           // center: [ 118.35, 35.35 ],
@@ -737,29 +762,77 @@ export default {
           maxZoom: 7.3
         })
       })
-      const data = this.mapData
       scene.on('loaded', () => {
-        /* eslint-disable no-new */
-        new CityLayer(scene, {
-          data,
-          joinBy: [ 'adcode', 'code' ],
-          adcode: [ '371300', '539' ],
-          depth: 3,
-          label: {
-            field: 'NAME_CHN',
-            textAllowOverlap: false
-          },
-          fill: {
-            color: '#001e8a48'
-          },
-          popup: {
-            enable: true,
-            Html: props => {
-              // return `<span>${props.NAME_CHN}:</span><span>${props.value}</span>`
+        fetch('./static/shp/linyi.json').then(res => res.json())
+          .then(data => {
+            const chinaPolygonLayer = new PolygonLayer({
+              autoFit: true
+            })
+              .source(data)
+              .color('#001e8a48')
+              .shape('fill')
+              .style({
+                opacity: 1
+              })
+              //  图层边界
+            const layer2 = new LineLayer({
+              zIndex: 2
+            }).source(data).color('#fff').size(0.6).style({
+              opacity: 1
+            })
+            // const pointLayer = new PointLayer({})
+            //   .source(this.mapParkData, {
+            //     parser: {
+            //       type: 'json',
+            //       x: 'lon',
+            //       y: 'lat'
+            //     }
+            //   }).shape('circle').size('outputvalue', [ 10, 25 ]).active(true).color('yellow').style({
+            //     opacity: 0.3,
+            //     strokeWidth: 2
+            //   })
+            scene.addLayer(chinaPolygonLayer)
+            scene.addLayer(layer2)
+            // scene.addLayer(pointLayer)
+          })
+        fetch(
+          './static/shp/linyi_name.json' // 标注数据
+        ).then(res => res.json()).then(data => {
+          const labelLayer = new PointLayer({
+            zIndex: 5
+          }).source(data, {
+            parser: {
+              type: 'json',
+              coordinates: 'center'
             }
-          }
+          }).color('#fff').shape('name', 'text').size(18).style({
+            opacity: 1,
+            stroke: '#fff',
+            strokeWidth: 0,
+            padding: [ 5, 5 ],
+            textAllowOverlap: false
+          })
+          scene.addLayer(labelLayer)
         })
+        addMarkers(data)
+        scene.render()
       })
+      function addMarkers (data) {
+        const markerLayer = new MarkerLayer()
+        for (let i = 0; i < data.length; i++) {
+          const el = document.createElement('div')
+          el.className = 'labelclass'
+
+          el.style.width = '15px'
+          el.style.height = data[i].value / 10 + 'px'
+          el.style.background = '#00FFFF'
+          const marker = new Marker({
+            element: el
+          }).setLnglat({ lng: data[i].lon * 1, lat: data[i].lat * 1 })
+          markerLayer.addMarker(marker)
+        }
+        scene.addMarkerLayer(markerLayer)
+      }
     }
   },
   mounted () {
@@ -775,6 +848,7 @@ export default {
       this.currentYear = res.data.regionTotalValue.first
       this.FixedInvestGrowthData = res.data.yearMacro.filter(x => x.part === '5')
       this.threeIndustryYears = res.data.threeIndustry.range
+      this.pointend = this.threeIndustryYears.length
       this.ThreeIndustryTime = res.data.threeIndustry.first
       this.MaxYear = utils.sortByKey(res.data.yearMacro.filter(x => x.part === '8'), 'year')[0].year
       this.NewYearGDPRate = res.data.yearMacro.filter(x => x.part === '8' && x.year === this.MaxYear && x.unit === '%')[0].value
@@ -783,7 +857,12 @@ export default {
       this.SecondIndustry.push({value: +res.data.threeIndustry.data.filter(x => x.year === this.ThreeIndustryTime && x.type === '第二产业')[0].value})
       this.ThirdIndustry.push({value: +res.data.threeIndustry.data.filter(x => x.year === this.ThreeIndustryTime && x.type === '第三产业')[0].value})
       this.MapData = res.data.regionLocationsMacro
-      console.log(this.MapData)
+      let fristData = utils.sortByKey(this.MapData, 'value')[0]
+      this.FristRegion = fristData.region
+      this.FristRegionValue = fristData.value
+      let lastData = utils.sortFromSmallToLargeByKey(this.MapData, 'value')[0]
+      this.LastRegion = lastData.region
+      this.LastRegionValue = lastData.value
       this.setThreeNeed()
       this.setCityGDP()
       this.setIndexData('0')
@@ -791,7 +870,7 @@ export default {
       this.setFristIndustry()
       this.setSecondIndustry()
       this.setThirdIndustry()
-      this.setMapChartData()
+      this.setMapChart(this.MapData)
     })
   }
 }
@@ -839,6 +918,23 @@ export default {
   top:555px;
   width: 610px;
   /* background-color: #001e8a48; */
+}
+.mapdescribe>p{
+  top: 110px;
+  left: 320px;
+  color: #fff;
+  height: 0;
+  /* width: 260px; */
+  line-height: 30px;
+  border-width: 0px;
+  border-radius: 0;
+  font-size: 17px;
+  text-align: left;
+}
+#map{
+  height: 490px;
+  width: 420px;
+  position: relative;
 }
 .centerNewYearGDPIndex{
   width: 330px;
