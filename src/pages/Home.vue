@@ -2,8 +2,13 @@
   <div class="wrapper">
     <div @mouseenter="mousrover" class="wrapper-title">
       <div style="border:transparent solid 2px;width:100%;"  @mouseenter="mousrover">
+      <!-- <el-collapse-transition>
+        <div class="function-center" v-show="showTitle" >
+            临沂市经济运行大数据平台
+          </div>
+      </el-collapse-transition> -->
       <el-collapse-transition>
-        <div class="main-data-operation"  v-show="showTitle" @mouseleave="mouseout">
+        <div class="main-data-operation" v-show="showTitle" @mouseleave="mouseout" style="padding-top:26px;">
           <div class="function-left">
             <el-radio v-model="radio" label="PopulationAnalysis" class="left_radio" @change="titleChange">人口结构与承载力分析</el-radio>
             <el-radio v-model="radio" label="MacroEconomy" class="left_radio" @change="titleChange">宏观经济运行</el-radio>
@@ -43,7 +48,7 @@
         </div>
       </el-collapse-transition>
       <el-collapse-transition>
-        <div class="function-center" style="margin-top:10px" v-show="!showTitle">
+        <div class="function-center" style="margin-top:10px" v-if="!showTitle">
             {{CurrentTitle}}
           </div>
       </el-collapse-transition>
@@ -72,7 +77,6 @@ export default {
       this.showTitle = false
     },
     titleChange (title) {
-      console.log(title)
       if (title === 'PopulationAnalysis') {
         this.CurrentTitle = '人口结构与承载力分析'
       } else if (title === 'MacroEconomy') {
@@ -116,11 +120,12 @@ export default {
 }
 .wrapper-title{
   /* border: 1px solid yellow; */
-  height: 80px;
+  /* height: 90px; */
   display: flex;
   border-bottom: 0 solid #fff;
   position: relative;
   z-index: 99;
+  padding: 0px 30px;
 }
 .wrapper-content{
   display: flex;
@@ -170,14 +175,20 @@ export default {
   background: url('../../static/image/title-right-select.png') bottom  no-repeat;
 }
 .main-data-operation{
-    height: 40px;
-    padding: 26px;
+    height: 50px;
+    /* padding: 26px; */
+    /* margin-top:26px; */
+    /* padding-top:26px; */
     display: flex;
+    /* width: 100%;
+    top:0px;
+    position: absolute; */
     background-color: transparent;
     background: url('../../static/image/header.png') bottom  no-repeat;
   }
-  .function-left{
+  .function-left,.function-right{
     /* display: flex; */
+    margin-top:-10px
   }
   .function-right{
    /* text-align: right; */
@@ -191,6 +202,7 @@ export default {
   color: #d2ff37;
   width:fit-content;
   text-align: center;
+    z-index: 999999;
   /* border: solid 2px yellow; */
    }
   .el-dropdown-menu{

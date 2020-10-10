@@ -12,7 +12,7 @@ export default new Router({
       component: Home,
       children: [
         {
-          path: '/PopulationAnalysis',
+          path: '/',
           name: 'PopulationAnalysis',
           component: () => import('@/pages/PopulationAnalysis')
         },

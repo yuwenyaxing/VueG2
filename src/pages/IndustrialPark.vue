@@ -374,6 +374,46 @@ export default {
           this.EmploymentValueData = res.data.regionData.filter(x => x.part === '3')
           this.AssetValueData = res.data.regionData.filter(x => x.part === '4')
           this.DebtValueData = res.data.regionData.filter(x => x.part === '5')
+        } else if (this.CurrentLayer === '各区县') {
+          this.OutputValueData = []
+          this.AddedValueData = []
+          this.InvestValueData = []
+          this.EmploymentValueData = []
+          this.AssetValueData = []
+          this.DebtValueData = []
+          let regiondata = res.data.parkData.slice(0, 5)
+          regiondata.forEach(element => {
+            this.OutputValueData.push({
+              year: element.year,
+              region: element.parkname,
+              value: element.outputvalue
+            })
+            this.AddedValueData.push({
+              year: element.year,
+              region: element.parkname,
+              value: element.addedvalue
+            })
+            this.InvestValueData.push({
+              year: element.year,
+              region: element.parkname,
+              value: element.investvalue
+            })
+            this.EmploymentValueData.push({
+              year: element.year,
+              region: element.parkname,
+              value: element.employmentvalue
+            })
+            this.AssetValueData.push({
+              year: element.year,
+              region: element.parkname,
+              value: element.assetvalue
+            })
+            this.DebtValueData.push({
+              year: element.year,
+              region: element.parkname,
+              value: element.debtvalue
+            })
+          })
         }
         this.setOutputValue()
         this.setAddedValue()
@@ -434,6 +474,20 @@ export default {
             }).source(data).color('#fff').size(0.6).style({
               opacity: 1
             })
+            const hightLayer = new LineLayer({
+              zIndex: 4, // 设置显示层级
+              name: 'hightlight'
+            })
+              .source({
+                type: 'FeatureCollection',
+                features: [ ]
+              })
+              .shape('line')
+              .size(2)
+              .color('red')
+              .style({
+                opacity: 1
+              })
             const pointLayer = new PointLayer({})
               .source(this.mapParkData, {
                 parser: {
@@ -448,9 +502,19 @@ export default {
             scene.addLayer(chinaPolygonLayer)
             scene.addLayer(layer2)
             scene.addLayer(pointLayer)
+            scene.addLayer(hightLayer)
+            chinaPolygonLayer.on('click', feature => {
+              console.log(feature, feature.feature.properties.name)
+              this.CurrentLayer = '各区县'
+              this.CurrentRegion = feature.feature.properties.name
+              this.getChartDataByTime()
+              hightLayer.setData({
+                type: 'FeatureCollection',
+                features: [ feature.feature ]
+              })
+            })
           })
-        fetch(
-          './static/shp/linyi_name.json' // 标注数据
+        fetch('./static/shp/linyi_name.json' // 标注数据
         ).then(res => res.json()).then(data => {
           const labelLayer = new PointLayer({
             zIndex: 5

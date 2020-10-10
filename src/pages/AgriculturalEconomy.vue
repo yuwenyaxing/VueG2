@@ -72,7 +72,8 @@ export default {
       MaxYearValue: '',
       tableData: [],
       mapData: [],
-      currentFruit: '苹果'
+      currentFruit: '苹果',
+      MapColorLayer: null
     }
   },
   methods: {
@@ -299,14 +300,15 @@ export default {
           // center: [ 118.35, 35.35 ],
           style: 'blank',
           zoom: 5,
-          minZoom: 7.3,
-          maxZoom: 7.3
+          // minZoom: 7.3,
+          // maxZoom: 7.3,
+          // pitch: 45,
         })
       })
       const data = this.mapData
       scene.on('loaded', () => {
         /* eslint-disable no-new */
-        new CityLayer(scene, {
+        this.MapColorLayer =  new CityLayer(scene, {
           data,
           joinBy: [ 'adcode', 'code' ],
           adcode: [ '371300', '539' ],
@@ -347,9 +349,18 @@ export default {
       this.mapData.push({code: '371327', name: '莒南县', value: data.junan})
       this.mapData.push({code: '371328', name: '蒙阴县', value: data.mengyin})
       this.mapData.push({code: '371329', name: '临沭县', value: data.linshu})
-      this.setMapChartData()
+      console.log(this.MapColorLayer)
+      if (this.MapColorLayer !== null) {
+        this.MapColorLayer.setData(this.mapData)
+      } else {
+        this.setMapChartData()
+      }
+    },
+    updateMapData () {
+      this.MapColorLayer.setData(this.mapData)
     },
     tableRowClick (row, column, event) {
+      console.log(row)
       this.setMapData(row)
     }
   },

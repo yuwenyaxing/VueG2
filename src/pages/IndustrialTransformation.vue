@@ -336,7 +336,6 @@ export default {
       this.CurentIndustry = res.data.indusData.first
       this.tableData = res.data.tableData
       this.mapData = res.data.companyData
-      console.log(this.mapData)
       this.TenIndusValueAddData = utils.sortFromSmallToLargeByKey(res.data.yearData.filter(x => x.part === '0'), 'year')
       this.HighTechCreateValueRatioData = utils.sortFromSmallToLargeByKey(res.data.yearData.filter(x => x.part === '1'), 'year')
       this.IndusSituationData = utils.sortFromSmallToLargeByKey(res.data.yearData.filter(x => x.part === '2'), 'year')
