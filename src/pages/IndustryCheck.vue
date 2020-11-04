@@ -1,6 +1,8 @@
 <template>
   <div>
-   <div  id='Map'></div>
+   <div  id='Map'>
+     <label style="color:white;margin-top: 750px;z-index: 9999999999;position: absolute;text-align: right;margin-left: 100px;">规模以上工业增加值增速</label>
+   </div>
     <div id='TotalValue' class="stas">
        <p>{{currentRegion}}工业总产值</p>
        <label>单位（亿元）</label>
@@ -45,27 +47,61 @@
 </template>
 <script>
 import { Chart } from '@antv/g2'
-import { Scene } from '@antv/l7'
-import { CityLayer } from '@antv/l7-district'
+import { Scene, PolygonLayer, LineLayer, PointLayer, Control } from '@antv/l7'
+// import { CityLayer } from '@antv/l7-district'
 import { Mapbox } from '@antv/l7-maps'
 import * as utils from '@/utils/commonUtils.js'
 export default {
   data () {
     return {
+      TotalValueChart: null,
       TotalValueData: [],
+      EnterprisesLossChart: null,
       EnterprisesLossData: [],
+      EnterprisesNumChart: null,
       EnterprisesNumData: [],
+      TotalAssetsChart: null,
       TotalAssetsData: [],
+      TotalProfitChart: null,
       TotalProfitData: [],
+      EmployedNumChart: null,
       EmployedNumData: [],
+      IndCreateValueChart: null,
       IndCreateValueData: [],
       currentRegion: '',
       tableData: [],
       mapData: [],
-      regionData: []
+      regionData: [],
+      mapLayer: [],
+      datakeys: [],
+      geoData: [],
+      covidGroupbyDate: {}
     }
   },
   methods: {
+    changemapData () {
+      let dateIndex = 1
+      const date = this.datakeys[dateIndex++ % 30]
+      this.mapLayer.setData(this.geoData, {
+        parser: {
+          type: 'geojson'
+        },
+        transforms: [
+          {
+            type: 'join',
+            sourceField: 'name',
+            targetField: 'name',
+            data: this.covidGroupbyDate[date]
+          }
+        ]
+      })
+    },
+    getMapColorData (data) {
+      data.features.forEach(element => {
+        element.properties.value = this.mapData.filter(x => x.name === element.properties.name)[0].value
+      })
+      return data
+    },
     setMapData () {
       const scene = new Scene({
         id: 'Map',
@@ -78,147 +114,218 @@ export default {
           maxZoom: 7.8
         })
       })
-      const data = this.mapData
-      scene.on('loaded', () => {
-        /* eslint-disable no-new */
-        new CityLayer(scene, {
-          data,
-          joinBy: [ 'adcode', 'code' ],
-          adcode: [ '371300', '539' ],
-          depth: 3,
-          label: {
-            field: 'NAME_CHN',
-            textAllowOverlap: false
-          },
-          fill: {
-            color: { field: 'value',
-              values: [
-                '#b3d1ff',
-                '#007acc'
-              ]
-            }
-          },
-          popup: {
-            enable: true
-            // Html: props => {
-            //   return `<span>${props.NAME_CHN}:</span><span>${props.value}</span>`
-            // }
-          }
-        })
+      const legend = new Control({
+        position: 'bottomright'
       })
-      scene.on('click', (ev) => {
-        console.log(ev)
+      const color = [
+        '#b3d1ff',
+        '#99c1ff',
+        '#80b2ff',
+        '#66a2ff',
+        '#4d93ff',
+        '#3384ff',
+        '#007acc'
+      ]
+      legend.onAdd = function () {
+        var el = document.createElement('div')
+        el.className = 'infolegend legend'
+        el.style.width = '90px'
+        el.style.marginBottom = '65px'
+        el.style.marginRight = '40px'
+        // el.style.height = '20px'
+        var grades = [3, 5, 8, 10, 12, 14]
+        for (var i = 0; i < grades.length; i++) {
+          el.innerHTML +=
+            '<div style="width:30px;height:10px;float:left;background:' +
+            color[i] +
+            '"></div> <lable  style="color:white;">' +
+            grades[i] +
+            (grades[i + 1] ? '–' + grades[i + 1] + '</label><br>' : '+')
+        }
+        return el
+      }
+      // const data = this.mapData
+      scene.on('loaded', () => {
+        fetch('./static/shp/linyi.json').then(res => res.json())
+          .then(data => {
+            const chinaPolygonLayer = new PolygonLayer({
+              autoFit: true
+            }).source(this.getMapColorData(data))
+              .color(
+                'value',
+                [
+                  '#b3d1ff',
+                  '#007acc'
+                ]
+              )
+              .shape('fill')
+              .style({
+                opacity: 1
+              })
+              //  图层边界
+            const layer2 = new LineLayer({
+              zIndex: 2
+            }).source(data).color('#fff').size(0.6).style({
+              opacity: 1
+            })
+            const hightLayer = new LineLayer({
+              zIndex: 4, // 设置显示层级
+              name: 'hightlight'
+            }).source({type: 'FeatureCollection', features: []}).shape('line').size(2).color('red').style({opacity: 1})
+            scene.addLayer(chinaPolygonLayer)
+            scene.addLayer(layer2)
+            scene.addLayer(hightLayer)
+            chinaPolygonLayer.on('click', feature => {
+              this.currentRegion = feature.feature.properties.name
+              this.getSelectRegionData()
+              hightLayer.setData({
+                type: 'FeatureCollection',
+                features: [ feature.feature ]
+              })
+            })
+          })
+        fetch('./static/shp/linyi_name.json' // 标注数据
+        ).then(res => res.json()).then(data => {
+          const labelLayer = new PointLayer({
+            zIndex: 5
+          }).source(data, {
+            parser: {
+              type: 'json',
+              coordinates: 'center'
+            }
+          }).color('#fff').shape('name', 'text').size(18).style({
+            opacity: 1,
+            stroke: '#fff',
+            strokeWidth: 0,
+            padding: [ 5, 5 ],
+            textAllowOverlap: false
+          })
+          scene.addLayer(labelLayer)
+          scene.addControl(legend)
+        })
       })
     },
     setTotalValue () {
-      let chart = new Chart({
-        container: 'TotalValue',
-        height: document.getElementById('TotalValue').clientHeight,
-        width: document.getElementById('TotalValue').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 40]
-      })
-      chart.data(this.TotalValueData)
-      utils.changeChartAxisForeground(chart, 'year', 'value')
-      chart.scale('value', {nice: true})
-      chart.tooltip({showMarkers: false})
-      chart.interaction('active-region')
-      chart.interval().position('year*value').color('#00CED1').label('value', {
+      if (!this.TotalValueChart || this.TotalValueChart === null) {
+        this.TotalValueChart = new Chart({
+          container: 'TotalValue',
+          height: document.getElementById('TotalValue').clientHeight,
+          width: document.getElementById('TotalValue').clientWidth, // 指定图表宽度
+          padding: [70, 20, 60, 40]
+        })
+      }
+      this.TotalValueChart.data(this.TotalValueData)
+      utils.changeChartAxisForeground(this.TotalValueChart, 'year', 'value')
+      this.TotalValueChart.scale('value', {nice: true})
+      this.TotalValueChart.tooltip({showMarkers: false})
+      this.TotalValueChart.interaction('active-region')
+      this.TotalValueChart.interval().position('year*value').color('#00CED1').label('value', {
         style: {
           fill: '#bddfff'
         }
       })
-      chart.render()
+      this.TotalValueChart.render()
     },
     setEnterprisesLoss () {
-      let chart = new Chart({
-        container: 'EnterprisesLoss',
-        height: document.getElementById('EnterprisesLoss').clientHeight,
-        width: document.getElementById('EnterprisesLoss').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 40]
-      })
-      chart.data(this.EnterprisesLossData)
-      utils.changeChartAxisForeground(chart, 'year', 'value')
-      chart.area().position('year*value').color('l(96) 0:#24ff00 1:#000000').shape('smooth').tooltip(false)
-      chart.line().position('year*value').size(2).color('#24ff00').shape('smooth').label('value', {
+      if (!this.EnterprisesLossChart || this.EnterprisesLossChart === null) {
+        this.EnterprisesLossChart = new Chart({
+          container: 'EnterprisesLoss',
+          height: document.getElementById('EnterprisesLoss').clientHeight,
+          width: document.getElementById('EnterprisesLoss').clientWidth, // 指定图表宽度
+          padding: [70, 20, 60, 40]
+        })
+      }
+      this.EnterprisesLossChart.data(this.EnterprisesLossData)
+      utils.changeChartAxisForeground(this.EnterprisesLossChart, 'year', 'value')
+      this.EnterprisesLossChart.area().position('year*value').color('l(96) 0:#24ff00 1:#000000').shape('smooth').tooltip(false)
+      this.EnterprisesLossChart.line().position('year*value').size(2).color('#24ff00').shape('smooth').label('value', {
         style: {
           fill: '#bddfff'
         }
       })
-      chart.render()
+      this.EnterprisesLossChart.render()
     },
     setEnterprisesNum () {
-      let chart = new Chart({
-        container: 'EnterprisesNum',
-        height: document.getElementById('EnterprisesNum').clientHeight,
-        width: document.getElementById('EnterprisesNum').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 40]
-      })
-      chart.data(this.EnterprisesNumData)
-      utils.changeChartAxisForeground(chart, 'year', 'value')
-      chart.scale('value', {nice: true})
-      chart.tooltip({showMarkers: false})
-      chart.interaction('active-region')
-      chart.interval().position('year*value').color('#FFD700').label('value', {
+      if (!this.EnterprisesNumChart || this.EnterprisesNumChart === null) {
+        this.EnterprisesNumChart = new Chart({
+          container: 'EnterprisesNum',
+          height: document.getElementById('EnterprisesNum').clientHeight,
+          width: document.getElementById('EnterprisesNum').clientWidth, // 指定图表宽度
+          padding: [70, 20, 60, 40]
+        })
+      }
+      this.EnterprisesNumChart.data(this.EnterprisesNumData)
+      utils.changeChartAxisForeground(this.EnterprisesNumChart, 'year', 'value')
+      this.EnterprisesNumChart.scale('value', {nice: true})
+      this.EnterprisesNumChart.tooltip({showMarkers: false})
+      this.EnterprisesNumChart.interaction('active-region')
+      this.EnterprisesNumChart.interval().position('year*value').color('#FFD700').label('value', {
         style: {
           fill: '#bddfff'
         }
       })
-      chart.render()
+      this.EnterprisesNumChart.render()
     },
     setTotalAssets () {
-      let chart = new Chart({
-        container: 'TotalAssets',
-        height: document.getElementById('TotalAssets').clientHeight,
-        width: document.getElementById('TotalAssets').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 40]
-      })
-      chart.data(this.TotalAssetsData)
-      utils.changeChartAxisForeground(chart, 'year', 'value')
-      chart.scale('value', {nice: true})
-      chart.tooltip({showMarkers: false})
-      chart.interaction('active-region')
-      chart.interval().position('year*value').color('#7CFC00').label('value', {
+      if (!this.TotalAssetsChart || this.TotalAssetsChart === null) {
+        this.TotalAssetsChart = new Chart({
+          container: 'TotalAssets',
+          height: document.getElementById('TotalAssets').clientHeight,
+          width: document.getElementById('TotalAssets').clientWidth, // 指定图表宽度
+          padding: [70, 20, 60, 40]
+        })
+      }
+      this.TotalAssetsChart.data(this.TotalAssetsData)
+      utils.changeChartAxisForeground(this.TotalAssetsChart, 'year', 'value')
+      this.TotalAssetsChart.scale('value', {nice: true})
+      this.TotalAssetsChart.tooltip({showMarkers: false})
+      this.TotalAssetsChart.interaction('active-region')
+      this.TotalAssetsChart.interval().position('year*value').color('#7CFC00').label('value', {
         style: {
           fill: '#bddfff'
         }
       })
-      chart.render()
+      this.TotalAssetsChart.render()
     },
     setTotalProfit () {
-      let chart = new Chart({
-        container: 'TotalProfit',
-        height: document.getElementById('TotalProfit').clientHeight,
-        width: document.getElementById('TotalProfit').clientWidth, // 指定图表宽度
-        padding: [80, 20, 60, 30]
-      })
-      chart.data(this.TotalProfitData)
-      utils.changeChartAxisForeground(chart, 'year', 'value')
-      chart.line().position('year*value').color('#FFFF00').label('value', {
+      if (!this.TotalProfitChart || this.TotalProfitChart === null) {
+        this.TotalProfitChart = new Chart({
+          container: 'TotalProfit',
+          height: document.getElementById('TotalProfit').clientHeight,
+          width: document.getElementById('TotalProfit').clientWidth, // 指定图表宽度
+          padding: [80, 20, 60, 30]
+        })
+      }
+      this.TotalProfitChart.data(this.TotalProfitData)
+      utils.changeChartAxisForeground(this.TotalProfitChart, 'year', 'value')
+      this.TotalProfitChart.line().position('year*value').color('#FFFF00').label('value', {
         style: {
           fill: '#bddfff'
         }
       })
-      chart.point().position('year*value')
-      chart.render()
+      this.TotalProfitChart.point().position('year*value')
+      this.TotalProfitChart.render()
     },
     setEmployedNum () {
-      let chart = new Chart({
-        container: 'EmployedNum',
-        height: document.getElementById('EmployedNum').clientHeight,
-        width: document.getElementById('EmployedNum').clientWidth, // 指定图表宽度
-        padding: [70, 20, 60, 40]
-      })
-      chart.data(this.EmployedNumData)
-      utils.changeChartAxisForeground(chart, 'year', 'value')
-      chart.scale('value', {nice: true})
-      chart.tooltip({showMarkers: false})
-      chart.interaction('active-region')
-      chart.interval().position('year*value').color('#7B68EE').label('value', {
+      if (!this.EmployedNumChart || this.EmployedNumChart === null) {
+        this.EmployedNumChart = new Chart({
+          container: 'EmployedNum',
+          height: document.getElementById('EmployedNum').clientHeight,
+          width: document.getElementById('EmployedNum').clientWidth, // 指定图表宽度
+          padding: [70, 20, 60, 40]
+        })
+      }
+      this.EmployedNumChart.data(this.EmployedNumData)
+      utils.changeChartAxisForeground(this.EmployedNumChart, 'year', 'value')
+      this.EmployedNumChart.scale('value', {nice: true})
+      this.EmployedNumChart.tooltip({showMarkers: false})
+      this.EmployedNumChart.interaction('active-region')
+      this.EmployedNumChart.interval().position('year*value').color('#7B68EE').label('value', {
         style: {
           fill: '#bddfff'
         }
       })
-      chart.render()
+      this.EmployedNumChart.render()
     },
     setIndCreateValue () {
       let chart = new Chart({

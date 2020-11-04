@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="webpage stas">
-      <iframe src="http://60.217.33.59:1222/green_develop.html" frameborder="0"  width='100%' height='100%'></iframe>
+      <iframe :src="iframeUrl" frameborder="0"  width='100%' height='100%'></iframe>
       <div class="webpagedescribe">
         <p style="top:140px;">无植被覆盖率占比：{{Novegetation}}%</p>
         <p style="top:180px;">底植被覆盖率占比：{{Lowvegetation}}%</p>
@@ -118,6 +118,7 @@
   </div>
 </template>
 <script>
+import * as api from '@/api.js'
 import { Chart } from '@antv/g2'
 import { Scene, PointLayer } from '@antv/l7'
 import { CityLayer } from '@antv/l7-district'
@@ -145,7 +146,8 @@ export default {
       IndusSolidWasteData: [],
       tableData: [],
       greenData: [],
-      mapData: []
+      mapData: [],
+      iframeUrl: ''
     }
   },
   methods: {
@@ -480,6 +482,7 @@ export default {
     }
   },
   mounted () {
+    this.iframeUrl = api.GREEN_URL
     this.axios.get('/industry/green/data/').then(res => {
       this.ForestCoverageData = res.data.yearData.filter(x => x.part === '0')
       this.WastewaterTreatmentRateData = res.data.yearData.filter(x => x.part === '1')

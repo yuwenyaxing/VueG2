@@ -49,14 +49,23 @@
     </div>
     <div id='FruitMap'>
       <p>各区县{{currentFruit}}“规模优势指数”</p>
+      <div class="maplenged">
+        <el-row>
+          <el-col :span="8"><div style="height:10px;width:30px;background-color: #b8ff21;border: solid 1px black"></div></el-col>
+          <el-col :span="14">指数 &lt; 1</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="8"><div style="height:10px;width:30px;background-color: #00d8ff;border: solid 1px black"></div></el-col>
+          <el-col :span="14">指数 &gt; 1</el-col>
+        </el-row>
+      </div>
     </div>
   </div>
 </template>
 <script>
 // import DataSet from '@antv/data-set'
 import { Chart } from '@antv/g2'
-import { Scene } from '@antv/l7'
-import { CityLayer } from '@antv/l7-district'
+import { Scene, PolygonLayer, LineLayer, PointLayer } from '@antv/l7'
 import { Mapbox } from '@antv/l7-maps'
 import * as utils from '@/utils/commonUtils.js'
 export default {
@@ -73,7 +82,8 @@ export default {
       tableData: [],
       mapData: [],
       currentFruit: '苹果',
-      MapColorLayer: null
+      mapcolorLayer: null,
+      geoData: []
     }
   },
   methods: {
@@ -297,70 +307,84 @@ export default {
         id: 'FruitMap',
         logoVisible: false,
         map: new Mapbox({
-          // center: [ 118.35, 35.35 ],
           style: 'blank',
-          zoom: 5,
-          // minZoom: 7.3,
-          // maxZoom: 7.3,
-          // pitch: 45,
+          center: [ 118.35, 35.25 ],
+          zoom: 7.4
         })
       })
-      const data = this.mapData
-      scene.on('loaded', () => {
-        /* eslint-disable no-new */
-        this.MapColorLayer =  new CityLayer(scene, {
-          data,
-          joinBy: [ 'adcode', 'code' ],
-          adcode: [ '371300', '539' ],
-          depth: 3,
-          label: {
-            field: 'NAME_CHN',
+      scene.on('loaded', async () => {
+        this.geoData = await (await fetch('./static/shp/linyi.json')).json()
+        this.mapcolorLayer = new PolygonLayer({})
+          .source(this.geoData, {
+            parser: {type: 'geojson'},
+            transforms: [
+              {
+                type: 'join',
+                sourceField: 'name',
+                targetField: 'name',
+                data: this.mapData
+              }
+            ]
+          }).color('value', d => { return d > 1 ? '#00d8ff' : '#b8ff21' }).shape('fill').style({opacity: 1})
+        const layer2 = new LineLayer({
+          zIndex: 2
+        }).source(this.geoData).color('#fff').size(0.6).style({
+          opacity: 1
+        })
+        scene.addLayer(this.mapcolorLayer)
+        scene.addLayer(layer2)
+        fetch('./static/shp/linyi_name.json' // 标注数据
+        ).then(res => res.json()).then(data => {
+          const labelLayer = new PointLayer({
+            zIndex: 5
+          }).source(data, {
+            parser: {
+              type: 'json',
+              coordinates: 'center'
+            }
+          }).color('#fff').shape('name', 'text').size(18).style({
+            opacity: 1,
+            stroke: '#fff',
+            strokeWidth: 0,
+            padding: [ 5, 5 ],
             textAllowOverlap: false
-          },
-          fill: {
-            color: { field: 'value',
-              values: [
-                '#b8ff21',
-                '#00d8ff'
-              ]
-            }
-          },
-          popup: {
-            enable: true,
-            Html: props => {
-              return `<span>${props.NAME_CHN}:</span><span>${props.value}</span>`
-            }
-          }
+          })
+          scene.addLayer(labelLayer)
         })
       })
     },
     setMapData (data) {
       this.currentFruit = data.fruits
       this.mapData = []
-      this.mapData.push({code: '371302', name: '兰山区', value: data.lanshan})
-      this.mapData.push({code: '371311', name: '罗庄区', value: data.luozhuang})
-      this.mapData.push({code: '371312', name: '河东区', value: data.hedong})
-      this.mapData.push({code: '371321', name: '沂南县', value: data.yinan})
-      this.mapData.push({code: '371322', name: '郯城县', value: data.tancheng})
-      this.mapData.push({code: '371323', name: '沂水县', value: data.yishui})
-      this.mapData.push({code: '371324', name: '兰陵县', value: data.lanling})
-      this.mapData.push({code: '371325', name: '费县', value: data.feixian})
-      this.mapData.push({code: '371326', name: '平邑县', value: data.pingyi})
-      this.mapData.push({code: '371327', name: '莒南县', value: data.junan})
-      this.mapData.push({code: '371328', name: '蒙阴县', value: data.mengyin})
-      this.mapData.push({code: '371329', name: '临沭县', value: data.linshu})
-      console.log(this.MapColorLayer)
-      if (this.MapColorLayer !== null) {
-        this.MapColorLayer.setData(this.mapData)
-      } else {
+      this.mapData.push({code: '371302', name: '兰山区', value: data.lanshan * 1})
+      this.mapData.push({code: '371311', name: '罗庄区', value: data.luozhuang * 1})
+      this.mapData.push({code: '371312', name: '河东区', value: data.hedong * 1})
+      this.mapData.push({code: '371321', name: '沂南县', value: data.yinan * 1})
+      this.mapData.push({code: '371322', name: '郯城县', value: data.tancheng * 1})
+      this.mapData.push({code: '371323', name: '沂水县', value: data.yishui * 1})
+      this.mapData.push({code: '371324', name: '兰陵县', value: data.lanling * 1})
+      this.mapData.push({code: '371325', name: '费县', value: data.feixian * 1})
+      this.mapData.push({code: '371326', name: '平邑县', value: data.pingyi * 1})
+      this.mapData.push({code: '371327', name: '莒南县', value: data.junan * 1})
+      this.mapData.push({code: '371328', name: '蒙阴县', value: data.mengyin * 1})
+      this.mapData.push({code: '371329', name: '临沭县', value: data.linshu * 1})
+      if (this.mapcolorLayer === null) {
         this.setMapChartData()
+      } else {
+        this.mapcolorLayer.setData(this.geoData, {
+          parser: {type: 'geojson'},
+          transforms: [
+            {
+              type: 'join',
+              sourceField: 'name',
+              targetField: 'name',
+              data: this.mapData
+            }
+          ]
+        })
       }
     },
-    updateMapData () {
-      this.MapColorLayer.setData(this.mapData)
-    },
     tableRowClick (row, column, event) {
-      console.log(row)
       this.setMapData(row)
     }
   },
@@ -456,6 +480,13 @@ export default {
   color: #bddfff;
   text-align: left;
   padding:12px;
+}
+.maplenged{
+  position: absolute;
+  margin-top:200px;
+  margin-left: 600px;
+  width:100px;
+  color: white;
 }
 /* .map{
  border: red solid 1px;

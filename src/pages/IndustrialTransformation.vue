@@ -271,12 +271,9 @@ export default {
         id: 'map',
         logoVisible: false,
         map: new Mapbox({
-          // center: [ 116.2825, 39.9 ],
-          pitch: 0,
           style: 'blank',
-          zoom: 5,
-          minZoom: 5.3,
-          maxZoom: 5.3
+          center: [ 116.2825, 39.9 ],
+          zoom: 5
         })
       })
       scene.on('loaded', () => {
@@ -331,7 +328,6 @@ export default {
   },
   mounted () {
     this.axios.get('/industry/transformation/data').then(res => {
-      console.log(res.data.yearData)
       this.Inds = res.data.indusData.range
       this.CurentIndustry = res.data.indusData.first
       this.tableData = res.data.tableData

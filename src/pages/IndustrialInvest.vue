@@ -48,14 +48,14 @@
         <el-select v-model="currentYear" @change="yearChange">
           <el-option v-for="item in Years" :key="item" :value="item" :label="item"></el-option>
         </el-select>
+        <label style="color:white;margin-top: 350px;z-index: 9999999999;position: absolute;text-align: right;margin-left: 250px;">工业投资完成额（万元）</label>
       </div>
     </div>
   </div>
 </template>
 <script>
 import { Chart } from '@antv/g2'
-import { Scene } from '@antv/l7'
-import { CityLayer } from '@antv/l7-district'
+import { Scene, PolygonLayer, LineLayer, PointLayer, Marker, MarkerLayer, Control } from '@antv/l7'
 import { Mapbox } from '@antv/l7-maps'
 import * as utils from '@/utils/commonUtils.js'
 export default {
@@ -71,8 +71,13 @@ export default {
       Industryhigh: '',
       Industrylow: '',
       colorMapData: '',
+      locationMapData: [],
       currentYear: '',
-      Years: []
+      Years: [],
+      mapcolorLayer: null,
+      geoData: [],
+      markerLayer: null,
+      mapScene: null
     }
   },
   methods: {
@@ -256,47 +261,115 @@ export default {
       chart.render()
     },
     setMapData () {
-      const scene = new Scene({
+      this.mapScene = new Scene({
         id: 'map',
         logoVisible: false,
         map: new Mapbox({
+          // pitch: 0,
           style: 'blank',
-          zoom: 5,
-          minZoom: 7.3,
-          maxZoom: 7.3
+          center: [118.35, 35.35],
+          zoom: 7.5
         })
       })
-      const data = this.colorMapData
-      scene.on('loaded', () => {
-        /* eslint-disable no-new */
-        new CityLayer(scene, {
-          data,
-          joinBy: [ 'adcode', 'code' ],
-          adcode: [ '371300', '539' ],
-          depth: 3,
-          label: {
-            field: 'NAME_CHN',
-            textAllowOverlap: false
-          },
-          fill: {
-            color: { field: 'value',
-              values: [
-                '#eceef8',
-                '#323E89'
-              ]
-            }
-          },
-          popup: {
-            enable: true,
-            Html: props => {
-              return `<span>${props.NAME_CHN}:</span><span>${props.value}</span>`
-            }
+      const legend = new Control({
+        position: 'bottomright'
+      })
+      const color = [
+        '#eceef8',
+        '#dadef1',
+        '#c7cdea',
+        '#b4bce4',
+        '#a2acdd',
+        '#8f9bd6',
+        '#7d8acf',
+        '#6a7ac8',
+        '#5769c1'
+      ]
+      legend.onAdd = function () {
+        var el = document.createElement('div')
+        el.className = 'infolegend legend'
+        el.style.width = '160px'
+        el.style.marginBottom = '60px'
+        el.style.marginRight = '60px'
+        // el.style.height = '20px'
+        var grades = [0, 30000, 50000, 80000, 100000, 500000, 1000000, 5000000, 1000000]
+        for (var i = 0; i < grades.length; i++) {
+          el.innerHTML +=
+            '<div style="width:30px;height:10px;float:left;background:' +
+            color[i] +
+            '"></div> <lable  style="color:white;">' +
+            grades[i] +
+            (grades[i + 1] ? '–' + grades[i + 1] + '</label><br>' : '+')
+        }
+        return el
+      }
+      this.mapScene.on('loaded', async () => {
+        this.geoData = await (await fetch('./static/shp/linyi.json')).json()
+        this.mapcolorLayer = new PolygonLayer({})
+          .source(this.geoData, {
+            parser: {type: 'geojson'},
+            transforms: [
+              {
+                type: 'join',
+                sourceField: 'name',
+                targetField: 'name',
+                data: this.colorMapData
+              }
+            ]
+          }).color('value', ['#eceef8', '#323E89']).shape('fill').style({opacity: 1})
+        const layer2 = new LineLayer({
+          zIndex: 2
+        }).source(this.geoData).color('#fff').size(0.6).style({
+          opacity: 1
+        })
+        // if (this.markerLayer !== null) {
+        //   this.mapScene.removeMarkerLayer(this.markerLayer)
+        // }
+        this.markerLayer = new MarkerLayer()
+        this.locationMapData.forEach(item => {
+          let endHtml = '</div>'
+          if (item.value < 100) {
+            endHtml = '<img style="width:22px;height:22px" src="../../static/image/warn.png"/></div>'
           }
+          const el = document.createElement('div')
+          el.style = 'width:185px'
+          el.innerHTML +=
+          '<div style="width:150px;height:30px;background:#515151;width:150px;float:left"><span style="position:relative;float:left;height:30px;line-height:30px;background: #F78A09;min-width:30px;width:' + item.value + '%;"><span>' + item.region + '完成' + item.value + '%</span></span></div>' + endHtml
+          // item.value < 100 ? '<img style="width:30px;height:30px" src="../../static/image/warn.png"/></div>': '</div>'
+          // '<img style="width:30px;height:30px" src="../../static/image/warn.png"/></div>'
+          const marker = new Marker({
+            element: el
+          }).setLnglat
+          ({ lng: item.lon * 1, lat: item.lat })
+          this.markerLayer.addMarker(marker)
+        })
+        this.mapScene.addLayer(this.mapcolorLayer)
+        this.mapScene.addLayer(layer2)
+        this.mapScene.addMarkerLayer(this.markerLayer)
+        fetch('./static/shp/linyi_name.json' // 标注数据
+        ).then(res => res.json()).then(data => {
+          const labelLayer = new PointLayer({
+            zIndex: 5
+          }).source(data, {
+            parser: {
+              type: 'json',
+              coordinates: 'center'
+            }
+          }).color('#fff').shape('name', 'text').size(18).style({
+            opacity: 1,
+            stroke: '#fff',
+            strokeWidth: 0,
+            padding: [ 5, 5 ],
+            textAllowOverlap: false
+          })
+          this.mapScene.addLayer(labelLayer)
+          this.mapScene.addControl(legend)
         })
       })
     },
     yearChange (item) {
-      console.log(item)
+      this.currentYear = item
+      this.getMapData()
     },
     getMapData () {
       this.axios.get('/industry/invest/data/' + this.currentYear).then(res => {
@@ -305,7 +378,42 @@ export default {
           name: item.region,
           value: item.value
         }))
-        this.setMapData()
+        this.locationMapData = res.data.filter(x => x.type === '投资完成')
+        if (this.mapcolorLayer === null) {
+          this.setMapData()
+        } else {
+          this.mapScene.removeMarkerLayer(this.markerLayer) 
+          this.markerLayer = new MarkerLayer()
+          this.locationMapData.forEach(item => {
+            let endHtml = '</div>'
+            if (item.value < 100) {
+              endHtml = '<img style="width:22px;height:22px" src="../../static/image/warn.png"/></div>'
+            }
+            const el = document.createElement('div')
+            el.style = 'width:185px'
+            el.innerHTML +=
+            '<div style="width:150px;height:30px;background:#515151;width:150px;float:left"><span style="position:relative;float:left;height:30px;line-height:30px;background: #F78A09;min-width:30px;width:' + item.value + '%;"><span>' + item.region + '完成' + item.value + '%</span></span></div>' + endHtml
+            // item.value < 100 ? '<img style="width:30px;height:30px" src="../../static/image/warn.png"/></div>': '</div>'
+            // '<img style="width:30px;height:30px" src="../../static/image/warn.png"/></div>'
+            const marker = new Marker({
+              element: el
+            }).setLnglat
+            ({ lng: item.lon * 1, lat: item.lat })
+            this.markerLayer.addMarker(marker)
+          })
+          this.mapScene.addMarkerLayer(this.markerLayer)
+          this.mapcolorLayer.setData(this.geoData, {
+            parser: {type: 'geojson'},
+            transforms: [
+              {
+                type: 'join',
+                sourceField: 'name',
+                targetField: 'name',
+                data: this.colorMapData
+              }
+            ]
+          })
+        }
       })
     }
   },
@@ -340,6 +448,92 @@ export default {
 }
 </script>
 <style scoped>
+.progress {
+height:30px;
+background:#515151;
+/* text-align: center; */
+/* border-left:1px solid transparent;
+border-right:1px solid transparent; */
+/* border-radius:10px; */
+}
+.progress > span {
+position:relative;
+float:left;
+/* margin:0 -1px; */
+min-width:30px;
+height:30px;
+line-height:30px;
+/* text-align:right; */
+/* background:#F78A09; */
+/* border:1px solid; */
+/* border-color:#bfbfbf #b3b3b3 #9e9e9e; */
+/* border-radius:10px; */
+/* background-image:-webkit-linear-gradient(top,#f0f0f0 0%,#dbdbdb 70%,#cccccc 100%);
+background-image:-moz-linear-gradient(top,#f0f0f0 0%,#dbdbdb 70%,#cccccc 100%);
+background-image:-o-linear-gradient(top,#f0f0f0 0%,#dbdbdb 70%,#cccccc 100%);
+background-image:linear-gradient(to bottom,#f0f0f0 0%,#dbdbdb 70%,#cccccc 100%); */
+/* -webkit-box-shadow:inset 0 1px rgba(255,255,255,0.3),0 1px 2px rgba(0,0,0,0.2);
+box-shadow:inset 0 1px rgba(255,255,255,0.3),0 1px 2px rgba(0,0,0,0.2); */
+}
+.progress > label{
+  text-align: center;
+  color: white;
+  width: 200px;
+  border: solid 1px red
+}
+.progress > span > span {
+padding:0 8px;
+font-size:11px;
+font-weight:bold;
+text-align: center;
+color:white
+/* color:#404040;
+color:rgba(0,0,0,0.7);
+text-shadow:0 1px rgba(255,255,255,0.4); */
+}
+/* .progress > span:before {
+content:'';
+position:absolute;
+top:0;
+bottom:0;
+left:0;
+right:0;
+z-index:1;
+height:18px;
+border-radius:10px;
+} */
+.progress .green {
+background:#85c440;
+border-color:#78b337 #6ba031 #568128;
+background-image:-webkit-linear-gradient(top,#b7dc8e 0%,#99ce5f 70%,#85c440 100%);
+background-image:-moz-linear-gradient(top,#b7dc8e 0%,#99ce5f 70%,#85c440 100%);
+background-image:-o-linear-gradient(top,#b7dc8e 0%,#99ce5f 70%,#85c440 100%);
+background-image:linear-gradient(to bottom,#b7dc8e 0%,#99ce5f 70%,#85c440 100%);
+}
+.progress .red {
+background: #F78A09;
+/* border-color:#c73321 #b12d1e #8e2418; */
+/* background-image:-webkit-linear-gradient(top,#ea8a7e 0%,#e15a4a 70%,#db3a27 100%);
+background-image:-moz-linear-gradient(top,#ea8a7e 0%,#e15a4a 70%,#db3a27 100%);
+background-image:-o-linear-gradient(top,#ea8a7e 0%,#e15a4a 70%,#db3a27 100%);
+background-image:linear-gradient(to bottom,#ea8a7e 0%,#e15a4a 70%,#db3a27 100%); */
+}
+/* .progress .orange {
+background:#f2b63c;
+border-color:#f0ad24 #eba310 #c5880d;
+background-image:-webkit-linear-gradient(top,#f8da9c 0%,#f5c462 70%,#f2b63c 100%);
+background-image:-moz-linear-gradient(top,#f8da9c 0%,#f5c462 70%,#f2b63c 100%);
+background-image:-o-linear-gradient(top,#f8da9c 0%,#f5c462 70%,#f2b63c 100%);
+background-image:linear-gradient(to bottom,#f8da9c 0%,#f5c462 70%,#f2b63c 100%);
+}
+.progress .blue {
+background:#5aaadb;
+border-color:#459fd6 #3094d2 #277db2;
+background-image:-webkit-linear-gradient(top,#aed5ed 0%,#7bbbe2 70%,#5aaadb 100%);
+background-image:-moz-linear-gradient(top,#aed5ed 0%,#7bbbe2 70%,#5aaadb 100%);
+background-image:-o-linear-gradient(top,#aed5ed 0%,#7bbbe2 70%,#5aaadb 100%);
+background-image:linear-gradient(to bottom,#aed5ed 0%,#7bbbe2 70%,#5aaadb 100%);
+} */
 #InvestExecution{
   height: 961px;left:15px;top:88px;width: 520px;
 }

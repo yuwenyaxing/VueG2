@@ -662,7 +662,13 @@ export default {
     getMapDataByType (type) {
       this.axios.get('/industry/tech/databytype/' + type).then(res => {
         this.mapData = res.data
-        this.setMapData()
+        this.pointLayer.setData(this.mapData, {
+          parser: {
+            type: 'json',
+            x: 'lon',
+            y: 'lat'
+          }
+        })
       })
     },
     setMapData () {
@@ -670,12 +676,9 @@ export default {
         id: 'map',
         logoVisible: false,
         map: new Mapbox({
-          // center: [ 116.2825, 39.9 ],
-          pitch: 0,
           style: 'blank',
-          zoom: 5,
-          minZoom: 5.8,
-          maxZoom: 5.8
+          center: [ 116.2825, 39.9 ],
+          zoom: 5
         })
       })
       scene.on('loaded', () => {
@@ -708,7 +711,7 @@ export default {
             }
           }
         })
-        const pointLayer = new PointLayer({})
+        this.pointLayer = new PointLayer({})
           .source(this.mapData, {
             parser: {
               type: 'json',
@@ -719,7 +722,7 @@ export default {
             opacity: 0.3,
             strokeWidth: 2
           })
-        scene.addLayer(pointLayer)
+        scene.addLayer(this.pointLayer)
       })
     },
     tableHeaderClick (column, event) {

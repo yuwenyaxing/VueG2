@@ -1,7 +1,7 @@
 <template>
   <div class="pop-main">
       <!-- 人口结构与承载力分析 -->
-    <iframe src="http://60.217.33.59:4100/yanan/populationAndBearingCapacity" frameborder="0"  width='100%' height='100%'></iframe>
+    <iframe :src="iframeUrl" frameborder="0"  width='100%' height='100%'></iframe>
     <div id='YearPopulationLive' class="stas">
        <p>历年常驻人口与户籍人口对比</p>
        <label>单位（万人）</label>
@@ -53,6 +53,7 @@
   </div>
 </template>
 <script>
+import * as api from '@/api.js'
 import DataSet from '@antv/data-set'
 import { Chart } from '@antv/g2'
 import * as utils from '@/utils/commonUtils.js'
@@ -65,7 +66,8 @@ export default {
       RegionPopDensityData: [],
       ContianPopData: [],
       PressureData: [],
-      tableData: []
+      tableData: [],
+      iframeUrl: ''
     }
   },
   methods: {
@@ -324,11 +326,11 @@ export default {
       chart.scale('type', {nice: true})
       chart.legend('value', false)
       chart.interaction('active-region')
-      chart.scale('value', { 
+      chart.scale('value', {
         min: -0.6
       })
       chart.interval().position('type*value').color('value', (val) => {
-        if (val > 0) { return 'Green' } else if (val > -0.2) { return '#7CFC00' }  else if (val > -0.4) { return '#FFD700' } else { return 'red' }
+        if (val > 0) { return 'Green' } else if (val > -0.2) { return '#7CFC00' } else if (val > -0.4) { return '#FFD700' } else { return 'red' }
       }).label('value', {
         style: {
           fill: '#bddfff'
@@ -410,6 +412,7 @@ export default {
     }
   },
   mounted () {
+    this.iframeUrl = api.PROP_URL
     this.axios.get('/population/data').then(res => {
       this.YearPopulationLiveData = res.data.yearPopulation.filter(x => x.part === '0')
       this.RegionPopSexData = res.data.yearPopulation.filter(x => x.part === '1')
