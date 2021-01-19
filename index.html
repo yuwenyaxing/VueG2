@@ -4,12 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>临沂市经济运行大数据平台</title> 
+    <link href=./static/Cesium/Widgets/widgets.css rel=stylesheet>
     <!-- <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.2.34&key=6ad2670c38c89b49e3ec9811c4ea8c0e"></script>  -->
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.2.34&key=6ad2670c38c89b49e3ec9811c4ea8c0e&plugin=AMap.ToolBar"></script> 
   </head>
   <body>
     <div id="app"></div>
+    <!-- <script src="https://cdn.jsdelivr.net/hls.js/latest/hls.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script> 
+    <script src=./static/Cesium/Cesium.js> </script>
+    <script src=./static/js/jquery-1.8.3.min.js> </script>
+    <script src=./static/js/index.js> </script>
     <!-- built files will be auto injected -->
   </body>
- 
+  <style>
+  .l7-popup-content{
+    z-index: 99999999;
+    background-color: orange;
+    /* font-size: 24px; */
+  }
+  .l7-popup-close-button{
+    display: none;
+  }
+  </style>
 </html>

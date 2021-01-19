@@ -1,0 +1,50 @@
+
+
+/**翻数动画**/
+
+*:first-child + html .clearfix {zoom: 1;}
+.fl {	float:left;}
+.fr {	float:right;}
+.none{	display:none;}
+.datanu {font-size: 15px;font-weight: 700; margin:0 0 16px 25px; width: 100%;}
+/* #dataNums { overflow: hidden; margin-bottom: 30px;}
+.inrow{font-size:0;;font-size:12px;;*font-size:0;font-family:arial;;letter-spacing:-3px;*letter-spacing:normal;*word-spacing:-1px;}
+.inrow>li,.inrow span{display:inline-block;*display:inline;*zoom:1;font-size:14px;letter-spacing:normal;word-spacing:normal; }
+.dataNums{ display: block; height:150px; text-align:center;}
+.dataNums .dataOne{ width:104px; height:150px; margin: 0px 3px; text-align: center; background: url('../../static/image/num-bg1.png') no-repeat; background-size: 100% 100%;}
+.dataNums .dataBoc {position: relative; width: 100%; height: 100%; overflow: hidden;}
+.dataNums .dataBoc .tt {position: absolute; top: 0;  left: 0; width: 100%;  height: 100%;}
+.dataNums .tt span{width:100%;height:100%; font:bold 130px "Arial";color:#ffee28;}
+
+#todayNum .dataNums{ display: block; height:100px; text-align:center;}
+#todayNum .dataNums .dataOne{ width:66px; height:80px; margin: 0 1px; text-align: center; background: url('../../static/image/num-bg.png') no-repeat; background-size: 100% 100%;}
+.dataNums .dataBoc {position: relative; width: 100%; height: 100%; overflow: hidden;}
+#todayNum .dataNums .tt span{width:100%;height:100%; font:bold 70px "Arial";color:#C1FFF7;} */
+
+.datanu {font-size: 15px; font-weight: 700; margin: 0 0 16px 0; width: 100%;}
+#dataNums { overflow: hidden; margin-bottom: 30px;}
+.inrow{font-size:0;;font-size:12px;;*font-size:0;font-family:arial;;letter-spacing:-3px;*letter-spacing:normal;*word-spacing:-1px;}
+.inrow>li,.inrow span{display:inline-block;*display:inline;*zoom:1;font-size:14px;letter-spacing:normal;word-spacing:normal; }
+.dataNums{ display: block; height:100px; text-align:center;}
+.dataNums .dataOne{ width:80px; height:100px; margin: 0px 3px; text-align: center; background: url('../../static/image/num-bg1.png') no-repeat; background-size: 100% 100%;}
+.dataNums .dataBoc {position: relative; width: 100%; height: 100%; overflow: hidden;}
+.dataNums .dataBoc .tt {position: absolute; top: 0;  left: 0; width: 100%;  height: 100%;}
+.dataNums .tt span{width:100%;height:100%; font:bold 80px "Arial";color:#ffee28;}
+
+#todayNum .dataNums{ display: block; height:100px; text-align:center;}
+#todayNum .dataNums .dataOne{ width:66px; height:80px; margin: 0 1px; text-align: center; background: url('../../static/image/num-bg.png') no-repeat; background-size: 100% 100%;}
+.dataNums .dataBoc {position: relative; width: 100%; height: 100%; overflow: hidden;}
+#todayNum .dataNums .tt span{width:100%;height:100%; font:bold 70px "Arial";color:#C1FFF7;}
+
+  
+/* ul.data-2 li {float: left; width: 50%;}
+.img-data { background: url('../../static/image/img-bj.png') no-repeat; width: 250px; height: 90px; padding: 15px 0 0 90px; background-size: 100%;}
+.img-data h1,
+.data-img h1 {text-align: center; font-size: 24px; color: #FFEE28; font-weight: 700;}
+.img-data h2,
+.data-img h2 {text-align: center; color: #c1fff7;}
+.data-img {background: url('../../static/image/img-bj02.png') no-repeat;width: 150px;height: 165px; background-size: 100%; margin: 15px auto 0 auto; padding: 50px 10px 0 10px;}
+.data-img h1 { font-size: 28px;}
+.data-img h2 {}
+ul.data-2 li:last-child {padding: 0 0 0 25px;} */
+  
